@@ -162,6 +162,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 19545191}
+  - component: {fileID: 19545192}
   m_Layer: 0
   m_Name: DoughSystem
   m_TagString: Untagged
@@ -184,6 +185,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1188876144}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &19545192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 19545190}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b6bd8aafee21a94498e32a88185e74b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _config: {fileID: 11400000, guid: 932fe309def71b942a23612774b727fe, type: 2}
+  _boundaryConfig: {fileID: 11400000, guid: db48e7dadf512ff4ab937d0a95e95bfd, type: 2}
 --- !u!1 &107010995
 GameObject:
   m_ObjectHideFlags: 0
@@ -193,6 +208,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 107010996}
+  - component: {fileID: 107010997}
   m_Layer: 0
   m_Name: LaneSystem
   m_TagString: Untagged
@@ -215,6 +231,42 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1188876144}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &107010997
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 107010995}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb8233de164b9e846a99d41efbd6c710, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _waypointConfig: {fileID: 11400000, guid: 69a7abe371fb9fa4abc6c8535f75cbdb, type: 2}
+  _monsterConfig: {fileID: 11400000, guid: 51f0cbe773c13944b9c6ca07713ca68c, type: 2}
+  _hoverScaleMultiplier: 1.05
+  _laneVisuals:
+  - Visual: {fileID: 1561734419}
+    Renderer: {fileID: 804102966}
+    NormalSprite: {fileID: 0}
+    HoveredSprite: {fileID: 0}
+  - Visual: {fileID: 541200591}
+    Renderer: {fileID: 752605771}
+    NormalSprite: {fileID: 0}
+    HoveredSprite: {fileID: 0}
+  - Visual: {fileID: 878209397}
+    Renderer: {fileID: 323218120}
+    NormalSprite: {fileID: 0}
+    HoveredSprite: {fileID: 0}
+  - Visual: {fileID: 1693787671}
+    Renderer: {fileID: 529995129}
+    NormalSprite: {fileID: 0}
+    HoveredSprite: {fileID: 0}
+  - Visual: {fileID: 613767483}
+    Renderer: {fileID: 1481927084}
+    NormalSprite: {fileID: 0}
+    HoveredSprite: {fileID: 0}
 --- !u!1 &206982351
 GameObject:
   m_ObjectHideFlags: 0
@@ -228,7 +280,7 @@ GameObject:
   - component: {fileID: 206982354}
   - component: {fileID: 206982353}
   m_Layer: 0
-  m_Name: ' Victory_Canvas'
+  m_Name: Victory_Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -507,7 +559,7 @@ GameObject:
   - component: {fileID: 323218119}
   - component: {fileID: 323218120}
   m_Layer: 0
-  m_Name: Visual
+  m_Name: Visual_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -590,8 +642,9 @@ GameObject:
   m_Component:
   - component: {fileID: 338340101}
   - component: {fileID: 338340102}
+  - component: {fileID: 338340103}
   m_Layer: 0
-  m_Name: Collider
+  m_Name: Collider_4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -662,6 +715,20 @@ PolygonCollider2D:
       - {x: 0.58778536, y: -0.80901694}
       - {x: 0.9510565, y: 0.30901712}
   m_UseDelaunayMesh: 0
+--- !u!114 &338340103
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 338340100}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd2def7f07542524cb82567fb63d2ada, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _laneManager: {fileID: 107010997}
+  _laneIndex: 4
 --- !u!1 &529995127
 GameObject:
   m_ObjectHideFlags: 0
@@ -673,7 +740,7 @@ GameObject:
   - component: {fileID: 529995128}
   - component: {fileID: 529995129}
   m_Layer: 0
-  m_Name: Visual
+  m_Name: Visual_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -995,7 +1062,7 @@ GameObject:
   - component: {fileID: 752605770}
   - component: {fileID: 752605771}
   m_Layer: 0
-  m_Name: Visual
+  m_Name: Visual_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1274,7 +1341,7 @@ GameObject:
   - component: {fileID: 804102965}
   - component: {fileID: 804102966}
   m_Layer: 0
-  m_Name: Visual
+  m_Name: Visual_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1559,6 +1626,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1366306396}
+  - component: {fileID: 1366306397}
   m_Layer: 0
   m_Name: TableSystem
   m_TagString: Untagged
@@ -1581,6 +1649,19 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1188876144}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1366306397
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1366306395}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d0c47d4ba9105b439bbef861f3b0baa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _config: {fileID: 11400000, guid: fbb1fcfb7c94d49409933a298b5d7f92, type: 2}
 --- !u!1 &1366868708
 GameObject:
   m_ObjectHideFlags: 0
@@ -1622,8 +1703,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1462165116}
   - component: {fileID: 1462165117}
+  - component: {fileID: 1462165118}
   m_Layer: 0
-  m_Name: Collider
+  m_Name: Collider_0
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1694,6 +1776,20 @@ PolygonCollider2D:
       - {x: 0.58778536, y: -0.80901694}
       - {x: 0.9510565, y: 0.30901712}
   m_UseDelaunayMesh: 0
+--- !u!114 &1462165118
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1462165115}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd2def7f07542524cb82567fb63d2ada, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _laneManager: {fileID: 107010997}
+  _laneIndex: 0
 --- !u!1 &1481927082
 GameObject:
   m_ObjectHideFlags: 0
@@ -1705,7 +1801,7 @@ GameObject:
   - component: {fileID: 1481927083}
   - component: {fileID: 1481927084}
   m_Layer: 0
-  m_Name: Visual
+  m_Name: Visual_4
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1922,8 +2018,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1588913453}
   - component: {fileID: 1588913454}
+  - component: {fileID: 1588913455}
   m_Layer: 0
-  m_Name: Collider
+  m_Name: Collider_3
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1994,6 +2091,20 @@ PolygonCollider2D:
       - {x: 0.58778536, y: -0.80901694}
       - {x: 0.9510565, y: 0.30901712}
   m_UseDelaunayMesh: 0
+--- !u!114 &1588913455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1588913452}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd2def7f07542524cb82567fb63d2ada, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _laneManager: {fileID: 107010997}
+  _laneIndex: 3
 --- !u!1 &1693033918
 GameObject:
   m_ObjectHideFlags: 0
@@ -2138,8 +2249,9 @@ GameObject:
   m_Component:
   - component: {fileID: 1789390652}
   - component: {fileID: 1789390653}
+  - component: {fileID: 1789390654}
   m_Layer: 0
-  m_Name: Collider
+  m_Name: Collider_2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2210,6 +2322,20 @@ PolygonCollider2D:
       - {x: 0.58778536, y: -0.80901694}
       - {x: 0.9510565, y: 0.30901712}
   m_UseDelaunayMesh: 0
+--- !u!114 &1789390654
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1789390651}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd2def7f07542524cb82567fb63d2ada, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _laneManager: {fileID: 107010997}
+  _laneIndex: 2
 --- !u!1 &1835172382
 GameObject:
   m_ObjectHideFlags: 0
@@ -2318,8 +2444,9 @@ GameObject:
   m_Component:
   - component: {fileID: 2043686016}
   - component: {fileID: 2043686017}
+  - component: {fileID: 2043686018}
   m_Layer: 0
-  m_Name: Collider
+  m_Name: Collider_1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2390,6 +2517,20 @@ PolygonCollider2D:
       - {x: 0.58778536, y: -0.80901694}
       - {x: 0.9510565, y: 0.30901712}
   m_UseDelaunayMesh: 0
+--- !u!114 &2043686018
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2043686015}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd2def7f07542524cb82567fb63d2ada, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _laneManager: {fileID: 107010997}
+  _laneIndex: 1
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

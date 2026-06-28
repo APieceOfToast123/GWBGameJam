@@ -1,7 +1,9 @@
 {
     "name": "GWBGameJam.Runtime",
     "rootNamespace": "GWBGameJam",
-    "references": [],
+    "references": [
+        "Unity.TextMeshPro"
+    ],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

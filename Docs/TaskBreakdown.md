@@ -367,17 +367,17 @@ MainMenu.unity：
 | T06 | GameLoop | ✅ 完成 |
 | T07 | 场景层级搭建 | ✅ 完成（手动）|
 | T08 | LaneSystem | ✅ 完成 |
-| T09 | DoughSystem | ⬜ 未开始 |
-| T10 | TableSystem | ⬜ 未开始 |
-| T11 | MonsterSystem | ⬜ 未开始 |
-| T12 | BakingSystem | ⬜ 未开始 |
-| T13 | ThrowSystem | ⬜ 未开始 |
-| T14 | LevelSystem | ⬜ 未开始 |
-| T15 | UISystem（Canvas 切换）| ⬜ 未开始 |
-| T16 | RatioBar | ⬜ 未开始 |
-| T17 | BakingIndicator + TableHPBar | ⬜ 未开始 |
-| T18 | LaneCalculator（Editor）| ⬜ 未开始 |
-| T19 | Prefab 制作 | ⬜ 未开始 |
-| T20 | Inspector 连线 | ⬜ 未开始 |
-| T21 | 球道点位烘焙 | ⬜ 未开始 |
-| T22 | 端到端集成测试 | ⬜ 未开始 |
+| T09 | DoughSystem | ✅ 完成 |
+| T10 | TableSystem | ✅ 完成 |
+| T11 | MonsterSystem | ✅ 完成 |
+| T12 | BakingSystem | ✅ 完成 |
+| T13 | ThrowSystem | ✅ 完成 |
+| T14 | LevelSystem | ✅ 完成 |
+| T15 | UISystem（Canvas 切换）| ✅ 完成 |
+| T16 | RatioBar | ✅ 完成 |
+| T17 | BakingIndicator + TableHPBar | ✅ 完成 |
+| T18 | LaneCalculator（Editor）| ✅ 完成 |
+| T19 | Prefab 制作 | ⬜ 未开始（手动）|
+| T20 | Inspector 连线 | ⬜ 未开始（手动）|
+| T21 | 球道点位烘焙 | ⬜ 未开始（手动，依赖 T18+T19+T20）|
+| T22 | 端到端集成测试 | ⬜ 未开始（手动）|

@@ -475,3 +475,211 @@ Architecture / CodingRules / TaskBreakdown / ManualInstructions / Code 已完全
   T20 Inspector 连线（LaneSystem 部分）可在 T09 之前或之后进行
 
 ========================================
+
+[2026-06-27 编码 T09]
+指令：继续，实现 T09 DoughSystem
+操作：
+  新建 Assets/Scripts/Systems/DoughSystem.cs
+    - Awake：ValidateConfig（_config + _boundaryConfig null 检查，_hasConfigError 防崩溃）
+    - OnEnable/OnDestroy：订阅/取消订阅 5 个事件（OnGameStateChanged / OnBakingStateChanged / OnLevelStarted / OnThrowStarted / OnThrowCompleted）
+    - IsInputActive 属性：!_hasConfigError && _isPlayingState && _isBakingIdle && DoughState != None
+    - Update：IsInputActive 为 true 时处理左键（ApplyFlour）和右键长按（ApplyWater）
+    - ApplyFlour：ratio -= FlourClickAmount，Clamp(0, MaxRatio)，DeriveAndPublishState
+    - ApplyWater：ratio += WaterFillRate * dt，Clamp(0, MaxRatio)，DeriveAndPublishState
+    - DeriveAndPublishState：GetDoughState(ratio)，仅在状态变化时广播 OnDoughStateChanged（Edge Case #4）
+    - ResetToInitial：ratio = InitialRatio，推导新状态，变化时广播
+    - HandleThrowStarted：直接设 None，prev != None 时广播
+    - GetCurrentRatio() / GetCurrentDoughState()：公开 API 供 UISystem 和 ThrowSystem 读取
+  ReviewChecklist：全部通过（11 条 AC 均覆盖）
+状态：完成
+备注：
+  BakingSystem（T12）尚未编写，_isBakingIdle 默认 true，不影响当前输入有效性
+  DoughState=None 时 IsInputActive 自动阻断，无需额外检查
+
+========================================
+
+[2026-06-27 编码 T10]
+指令：继续，实现 T10 TableSystem
+操作：
+  新建 Assets/Scripts/Systems/TableSystem.cs
+    - Awake：null 检查 _config，_config.Validate()（MaxHits<1→Error+强制为1）
+    - OnEnable/OnDestroy：订阅/取消订阅 OnMonsterReachedTable + OnLevelStarted
+    - HandleMonsterReachedTable：_currentHP <= 0 则 guard return；否则 _currentHP--，归零时发布 OnTableDestroyed
+    - HandleLevelStarted：_currentHP = MaxHits（无论上一关 HP 残余多少）
+    - GetCurrentHP() / GetMaxHP()：公开 API 供 UISystem 读取
+  ReviewChecklist：全部通过（6 条 AC 均覆蓋）
+状态：完成
+备注：
+  同帧多次 OnMonsterReachedTable 的 guard：_currentHP <= 0 检查确保 OnTableDestroyed 只广播一次
+  TableConfig 自带 Validate()，在 Awake 中显式调用
+
+========================================
+
+[2026-06-27 编码 T11]
+指令：继续，实现 T11 MonsterSystem（MonsterController + MonsterSystem）
+操作：
+  新建 Assets/Scripts/Systems/MonsterController.cs
+    - Awake：null 检查 _visual + _spriteRenderer（prefab 序列化引用）
+    - Initialize(laneIndex, data, config, laneManager)：设置所有运行时数据、初始位置与缩放
+    - Update：计时（UpdateTimer）或动画（UpdateMovement），_config == null 时 guard return
+    - StartMoving：posIndex >= MoveStepCount-1 时直接 ReachedTable；否则设置 moveFrom/moveTo 并开始动画
+    - UpdateMovement：Lerp position + ScaleCurve 插值，progress >= 1 时 FinishMoving
+    - FinishMoving：posIndex = targetPosIndex，重置 moveTimer
+    - ReachedTable：发布 OnMonsterReachedTable → Destroy
+    - Defeat：发布 OnMonsterDefeated → Destroy
+    - TriggerWrongHitFeedback：启动 FlashCoroutine（HitSprite/IdleSprite 交替，WaitForSeconds）
+    - GetTargetPosition：IsPendingMove && posIndex < MoveStepCount-1 → 下一点位；否则当前点位
+    - OnDestroy：StopAllCoroutines
+  新建 Assets/Scripts/Systems/MonsterSystem.cs
+    - Awake：ValidateConfig（4 个 SerializeField + _config.Validate()）
+    - OnEnable/OnDestroy：订阅/取消 OnGameStateChanged（TimeScale 已自动暂停，handler 为空+注释）
+    - SpawnMonster：IsLaneOccupied guard → Instantiate → Initialize → _monsters[i] = mc → 发布 OnMonsterSpawned
+    - DefeatMonster：先 null array 再调 Defeat（避免 event handler 重复清理）
+    - IsLaneOccupied：依赖 Unity null check（Destroy 后引用自动为 null）
+    - GetMonsterInLane / TriggerWrongHitFeedback / GetTargetPosition：边界检查 + null check
+  ReviewChecklist：全部通过（12 条 AC 均覆盖）
+状态：完成
+备注：
+  MonsterController 不订阅任何事件（由 MonsterSystem 统一管理）
+  MonsterSystem 不订阅 OnMonsterDefeated/OnMonsterReachedTable（依赖 Unity null check + DefeatMonster 显式清理）
+  闪白协程使用 WaitForSeconds（随 TimeScale=0 自动暂停），符合 CodingRules 规定
+
+========================================
+
+[2026-06-27 编码 T12]
+指令：继续，实现 T12 BakingSystem
+操作：
+  新建 Assets/Scripts/Systems/BakingSystem.cs
+    - Awake：ValidateConfig（_config/_laneManager/_doughSystem null 检查 + _config.Validate()）
+    - OnEnable/OnDestroy：订阅/取消订阅 OnGameStateChanged
+    - Update：!_isPlayingState 时 return；HandleSpaceInput；非 Idle 时 AdvanceTimer
+    - HandleSpaceInput：Idle 时检查 GetKeyDown+DoughState!=None → StartBaking；非 Idle 时检查 GetKeyUp → TriggerThrow
+    - StartBaking：timer=0，Undercooked，发布 OnBakingStateChanged(Undercooked, Idle)
+    - AdvanceTimer：deltaTime 累加；达阈值时 TransitionTo(Cooked/Burnt) 或 TriggerThrow（强制）
+    - TriggerThrow：GetHoveredLaneIndex() < 0 时 Random.Range(0,5)+Debug.Log；先设 Idle+timer=0，再发布 OnThrowRequested + OnBakingStateChanged(Idle, prev)
+    - HandleGameStateChanged：!wasPlaying && isPlaying && PreviousState!=Paused → ResetToIdle（防止关卡切换时残留非Idle状态）
+    - ResetToIdle：timer=0，Idle，发布 OnBakingStateChanged(Idle, prev)
+  ReviewChecklist：全部通过（11 条 AC 均覆盖）
+状态：完成
+备注：
+  HandleGameStateChanged 中增加了 Spec 未明确说明的 ResetToIdle 逻辑：防御性修复，避免玩家在关卡结束时持有空格导致新关卡开始时 BakingState 残留非 Idle
+  Paused→Playing 不触发 Reset（e.PreviousState != Paused 守衛），恢复时保留烤制进度
+
+========================================
+
+[2026-06-27 编码 T13]
+指令：继续，实现 T13 ThrowSystem
+操作：
+  新建 Assets/Scripts/Systems/ThrowSystem.cs
+    - Awake：ValidateConfig（8个 SerializeField 全 null→Error；_explosionPrefab null→Warning 非 Error）
+    - OnEnable/OnDestroy：订阅/取消订阅 OnThrowRequested + OnGameStateChanged；OnDestroy 销毁 _activeProjectile 不发布事件
+    - HandleThrowRequested：同帧捕获 _capturedRatio+_startPos；有怪物→GetTargetPosition，无怪物→GetWaypoint(laneIndex, MoveStepCount/2)；Instantiate Projectile；_inFlight=true；发布 OnThrowStarted
+    - Update：!_inFlight||!_isPlayingState 时 return；_flightTimer+=dt；t=Clamp01；抛物线公式更新 Projectile 位置；t>=1 → CompleteThrow
+    - CompleteThrow：_inFlight=false；DetermineResult；Hit→DefeatMonster+InstantiateExplosion；WrongRatio→TriggerWrongHitFeedback；Destroy Projectile；发布 OnThrowCompleted
+    - DetermineResult：monster==null→EmptyLane；GetCenterRatio<0→WrongRatio；|capturedRatio-center|<=ToleranceHalfWidth→Hit；else WrongRatio
+    - HandleGameStateChanged：更新 _isPlayingState
+  ReviewChecklist：全部通过（9 条 AC 均覆盖）
+状态：完成
+备注：
+  命中判定在 CompleteThrow 时重读 GetMonsterInLane（覆盖 EdgeCase #1/#2 怪物逃跑/新生成）
+  _explosionPrefab null 不设 _hasConfigError，允许无 VFX 情况下开发测试
+  DetermineResult 中 GetCenterRatio<0 对应 TooSoft/TooHard/None 状态（DoughStateBoundaryConfig 返回 -1）
+
+========================================
+[2026-06-27 编码 T14]
+指令：继续，实现 T14 LevelSystem（5任务自动继续系列 1/5）
+操作：
+  新建 Assets/Scripts/Systems/LevelSystem.cs
+    - SerializeField：LevelConfig、MonsterSystem、MonsterData[]（3个 null→Error）
+    - Awake：ValidateConfig（全部 null 检查）
+    - OnEnable/OnDestroy：订阅/取消订阅 OnLevelStarted、OnMonsterDefeated、OnMonsterReachedTable、OnGameStateChanged（共 4 对）
+    - HandleLevelStarted：设 _currentLevelIndex（越界→取最后一关+Warning）；重置计数器；_isSpawningActive=true
+    - Update：!_isPlayingState||!_isSpawningActive 时 return；_spawnTimer+=dt；到达间隔→TrySpawn
+    - TrySpawn：已满→停止生成；随机空闲球道+随机怪物类型；SpawnMonster失败→LogWarning 不计数；_spawnTimer=0f
+    - HandleMonsterDefeated/HandleMonsterReachedTable：_exitedCount++；CheckLevelCleared（>=TotalMonsters→发布 OnLevelCleared）
+    - 公共 API：GetExitedCount、GetTotalMonsters、GetCurrentLevelIndex
+  ReviewChecklist：通过
+状态：完成
+备注：
+  _isSpawningActive 初始 false，Update 在 OnLevelStarted 前永不进入生成逻辑
+  _exitedCount 同时计入被打败与到达桌子的怪物，CheckLevelCleared 防止重复发布
+
+========================================
+[2026-06-27 编码 T15]
+指令：继续，实现 T15 UISystem（Canvas 面板切换）（5任务自动继续系列 2/5）
+操作：
+  新建 Assets/Scripts/UI/UISystem.cs
+    - SerializeField：5个 Canvas GO（null→Error）；LevelSystem、TMP_Text（null→Warning）
+    - OnEnable/OnDestroy：订阅/取消订阅 OnGameStateChanged + OnLevelCleared（2 对）
+    - HandleLevelCleared：缓存 _clearedLevelIndex = LevelSystem.GetCurrentLevelIndex()
+    - HandleGameStateChanged：HUD=Playing||Paused；各面板按状态切换；LevelTransition 时更新文本
+    - 无 MainMenu_Canvas（Architecture FROZEN；MAIN_MENU 状态全面板 inactive）
+  ReviewChecklist：通过
+状态：完成
+备注：
+  OnLevelCleared 在 OnGameStateChanged(LevelTransition) 之前发布，_clearedLevelIndex 缓存时序正确
+
+========================================
+[2026-06-27 编码 T16]
+指令：继续，实现 T16 RatioBar（弹性比例指示器）（5任务自动继续系列 3/5）
+操作：
+  新建 Assets/Scripts/UI/RatioBar.cs
+    - SerializeField：DoughSystem、DoughConfig、DoughStateBoundaryConfig（null→Error）；IndicatorRect（null→Error）；3参考线 RectTransform
+    - Update：懒初始化参考线（rect.width>0 时首次）；DoughState==None→隐藏指示器；Lerp _displayedRatio；更新位置
+    - HandleDoughStateChanged：PreviousState==None→snap InitialRatio（避免从旧位置弹回）
+    - HandleLevelStarted：snap InitialRatio
+    - Bug fix：DoughState.Soft/Hard 不存在，已修正为 Softest/Hardest
+  ReviewChecklist：通过
+状态：完成
+
+========================================
+[2026-06-27 编码 T17]
+指令：继续，实现 T17 BakingIndicator + TableHPBar（5任务自动继续系列 4/5）
+操作：
+  新建 Assets/Scripts/UI/BakingIndicator.cs
+    - OnBakingStateChanged 订阅/取消（1对）
+    - Update：fillAmount=Clamp01(timer/BurntForcedThrowDuration)，Idle时=0
+    - HandleBakingStateChanged：switch→color
+  新建 Assets/Scripts/UI/TableHPBar.cs
+    - OnMonsterReachedTable + OnLevelStarted 订阅/取消（2对）
+    - 无 Update：纯事件驱动；UpdateDisplay：ratio=CurrentHP/MaxHP；fillAmount+三档颜色
+  ReviewChecklist：通过
+状态：完成
+
+========================================
+[2026-06-27 编码 T18]
+指令：继续，实现 T18 LaneCalculatorData + LaneCalculatorWindow（Editor 工具）（5任务自动继续系列 5/5）
+操作：
+  新建 Assets/Editor/LaneCalculatorData.cs
+    - ScriptableObject [CreateAssetMenu]；WaypointYPositions(8)；LaneRootNames(5)
+  新建 Assets/Editor/LaneCalculatorWindow.cs
+    - EditorWindow [MenuItem("GWBGameJam/Lane Waypoint Calculator")]
+    - Auto Distribute：扫描球道 PolygonCollider2D → yMin/yMax → 5% margin → 均分 stepCount 个 Y 值
+    - Bake：预验证全部 GO + Collider；4顶点按 X 排序 → 左/右边按 Y 排序 → 水平插值 → 中点；写 LaneWaypointConfig；SaveAssets
+    - Scene Preview：OnSceneGUI 5色小球显示 _previewPositions
+  ReviewChecklist：通过（Editor 工具，FindObjectOfType/GetComponentInChildren 在 Editor Assembly 合规）
+状态：完成
+备注：
+  Bake 预验证设计：先检查全部再写，避免写入半数数据
+
+========================================
+[2026-06-27 文档整理]
+指令：整理 ManualInstructions，覆盖 T19~T22 手动操作步骤
+操作：
+  更新 Docs/TaskBreakdown.md：T09~T18 状态改为 ✅ 完成；T19~T22 标注（手动）
+  重写 Docs/ManualInstructions.md：
+    T19 — Prefab 制作（Monster_A/B/C 结构、Bread、Explosion 可选）
+    T20 — Inspector 连线（全系统 SerializeField 赋值表格）
+          ★ 附两处 GameLoop 集成修复：
+            1. GameLoop.Start() 改为 StartGame()（避免 Game 场景空屏）
+            2. GoToMainMenu() 改为 SceneManager.LoadScene("MainMenu")
+            3. 新增 SceneLoader.cs 供 MainMenu Start 按钮调用
+          按钮连线：PauseMenu/Death/Victory/LevelTransition 各按钮 → GameLoop 公开方法
+    T21 — 球道点位烘焙（LaneCalculatorWindow 使用步骤）
+    T22 — 端到端集成测试（7条测试路径）
+状态：完成
+备注：
+  GameLoop.Start() 调用 TransitionTo(MainMenu) 但 Game.unity 无 MainMenu_Canvas 会导致空屏，此为遗漏的集成缺口
+  GoToMainMenu() 缺少 SceneManager.LoadScene 同为集成缺口，均在 T20 手动步骤中说明并提供修复代码
+
+========================================
