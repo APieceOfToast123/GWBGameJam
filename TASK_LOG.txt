@@ -348,4 +348,49 @@ GWBGameJam - 任务完成记录
   LevelTransition→下一关由 AdvanceFromTransition() 公开方法触发（UISystem按钮调用）
 
 ========================================
+========================================
+
+[2026-06-27 手动操作指引]
+指令：为 T05 和 T07 生成手动操作 Instruction
+操作：创建 Docs/ManualInstructions.md，含 T05（SO Assets）和 T07（场景层级）的分步操作说明
+状态：完成
+备注：等待用户完成 T05+T07 后继续 T08
+
+========================================
+
+[2026-06-27 Consistency Review]
+指令：以代码为 Source of Truth，检查 Architecture / TaskBreakdown / 代码 三者命名和目录一致性
+操作：
+  发现 12 处 Architecture 文档过期，全部分类为「文档过期」，代码无需改动
+  更新 012_Architecture.md（版本 1.0 → 1.1）：
+  1. Folder 结构：删除按系统分子目录（GameLoop/ Lane/ Monster/ 等），改为代码实际使用的按类型分（Core/ Config/ Events/ Systems/ UI/）
+  2. Editor asmdef 路径：Assets/Scripts/Editor/ → Assets/Editor/（与 Scripts/ 平级）
+  3. Events 列表：删除 OnGamePaused/OnGameResumed/OnDoughCleared/OnBreadLaunched/OnThrowResolved/OnTableHit；新增 OnThrowRequested/OnThrowStarted/OnThrowCompleted；新增 LaneEvents.cs/OnLaneHoverChanged
+  4. 数据所有权表：删除 OnTableHit（TableSystem 直接订阅 OnMonsterReachedTable）
+  5. MonoBehaviour 命名规范：移除强制 [System]Manager，改为「以各 System Spec 定义为准」，并附汇总表
+  6. Namespace：删除 GWBGameJam.Editor 子命名空间（CodingRules 规定统一用 GWBGameJam）
+  7. UI 节点命名：由 HUD/PauseMenu/DeathScreen 等统一为 _Canvas 后缀（HUD_Canvas / PauseMenu_Canvas 等），与 ManualInstructions.md 对齐
+  8. Prefabs 目录：Projectiles/ → Projectile/（单数，与实际目录一致）
+  TaskBreakdown.md：已对齐，无需修改（T01 已正确写 Assets/Editor/，T04 已用 System Spec 事件名）
+状态：完成
+备注：
+  全部差异均为「文档过期」，代码无需改动
+  后续所有新增代码的命名以本次对齐后的 Architecture v1.1 为准
+  等待用户完成 T05 + T07 后继续 T08 LaneSystem
+
+========================================
+
+[2026-06-27 Consistency Review — 补充修复]
+指令：删掉 Game.unity 的 MainMenu_Canvas；同时修 DRIFT-1 / DRIFT-2
+操作：
+  DRIFT-3（用户决定）：从 Architecture §Game.unity 层级、ManualInstructions T07 中移除 MainMenu_Canvas；
+    加注警告"不要在 Game.unity 里创建 MainMenu_Canvas"；
+    GoToMainMenu() 走 SceneManager.LoadScene，不走 Canvas 切换
+  DRIFT-1（无歧义文档修正）：Architecture §订阅生命周期表格 OnEnable 配对栏改为 "OnDisable / OnDestroy"，与 CodingRules 示例对齐
+  DRIFT-2（无歧义文档修正）：Architecture §Folder、CodingRules §文件结构、Architecture §AC 中 Config/ 描述补充"及配套 [Serializable] 数据类"
+  DecisionLog 追加 [UI] MainMenu_Canvas 决策
+状态：完成
+备注：Remaining drift = 0；等待宣布 ARCHITECTURE FROZEN
+
+========================================
 （后续每次完成任务后追加记录）

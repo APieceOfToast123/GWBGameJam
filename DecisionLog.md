@@ -285,6 +285,11 @@ Config：待移动阈值 0.5s（Balance 可调）。
 
 ---
 
+**[UI] MainMenu_Canvas 不放入 Game.unity**
+返回主菜单通过 SceneManager.LoadScene("MainMenu") 实现，Game.unity 的 UISystem 不需要 MainMenu_Canvas。GoToMainMenu() 触发场景切换，Game.unity 只管游戏内的 Canvas 状态（HUD / Pause / LevelTransition / Death / Victory）。
+
+---
+
 ## 开发工作流规则
 
 **需求三分类：**

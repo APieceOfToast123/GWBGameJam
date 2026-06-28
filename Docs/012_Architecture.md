@@ -2,9 +2,9 @@
 
 | 字段 | 内容 |
 |------|------|
-| Version | 1.0 |
+| Version | 1.1 |
 | Status | Approved |
-| Last Updated | 2026-06-27 |
+| Last Updated | 2026-06-27 (Consistency Review — aligned to actual code) |
 | Depends On | 001_GameLoop |
 | Required By | 002, 003, 004, 005, 006, 007, 008, 009, 010, 011, 013, 014 |
 
@@ -87,7 +87,7 @@ Application Start
 | 怪物移动状态（待移动/移动中） | MonsterSystem | 订阅事件 / 调用公开属性 |
 | 面团比例值、当前档位 | DoughSystem | 订阅 `OnDoughStateChanged` |
 | 烤制状态、当前烤制时间 | BakingSystem | 订阅 `OnBakingStateChanged` |
-| 桌子当前 HP 计数 | TableSystem | 订阅 `OnTableHit` / `OnTableDestroyed` |
+| 桌子当前 HP 计数 | TableSystem | 订阅 `OnTableDestroyed`；HP 减少通过订阅 `OnMonsterReachedTable` 内部处理 |
 | 当前关卡怪物退场计数 | LevelSystem | 订阅 `OnLevelCleared` |
 
 **规则：** 任何系统需要其他系统的数据，只能通过上表中"其他系统获取方式"列的方法。不得直接访问他人的私有字段。
@@ -113,31 +113,46 @@ EventBus<T>（静态泛型类，T 为 readonly struct）
 
 ```
 Assets/Scripts/Events/
-├── GameLoopEvents.cs       ← OnGameStateChanged, OnLevelStarted, OnGamePaused, OnGameResumed
-├── MonsterEvents.cs        ← OnMonsterSpawned, OnMonsterDefeated, OnMonsterReachedTable
-├── DoughEvents.cs          ← OnDoughStateChanged, OnDoughCleared
-├── BakingEvents.cs         ← OnBakingStateChanged, OnBreadLaunched
-├── ThrowEvents.cs          ← OnThrowResolved
-├── LevelEvents.cs          ← OnLevelCleared
-└── TableEvents.cs          ← OnTableHit, OnTableDestroyed
+├── GameLoopEvents.cs       ← OnGameStateChanged { NewState, PreviousState }
+│                              OnLevelStarted { LevelIndex }
+├── MonsterEvents.cs        ← OnMonsterSpawned { LaneIndex, Data }
+│                              OnMonsterDefeated { LaneIndex }
+│                              OnMonsterReachedTable { LaneIndex }
+├── DoughEvents.cs          ← OnDoughStateChanged { NewState, PreviousState }
+├── BakingEvents.cs         ← OnBakingStateChanged { NewState, PreviousState }
+│                              OnThrowRequested { LaneIndex }  ← BakingSystem 发布，ThrowSystem 订阅
+├── ThrowEvents.cs          ← OnThrowStarted { LaneIndex }
+│                              OnThrowCompleted { LaneIndex, Result }
+├── LaneEvents.cs           ← OnLaneHoverChanged { LaneIndex }  ← -1 = 无悬停
+├── LevelEvents.cs          ← OnLevelCleared { }
+└── TableEvents.cs          ← OnTableDestroyed { }
 ```
+
+> **已移除事件（相比草稿）：**
+> - `OnGamePaused` / `OnGameResumed` → Pause 通过 `Time.timeScale = 0` 实现，状态变更统一走 `OnGameStateChanged`
+> - `OnDoughCleared` → DoughState.None 已通过 `OnDoughStateChanged` 携带
+> - `OnBreadLaunched` → 改名为语义更准确的 `OnThrowRequested`
+> - `OnThrowResolved` → 拆分为 `OnThrowStarted`（面包离桌）+ `OnThrowCompleted`（到达判定）
+> - `OnTableHit` → TableSystem 直接订阅 `OnMonsterReachedTable`，无需中间事件
 
 ### Event Struct 命名规则
 
-- 格式：`On[名词][动词]`（与 GameLoop Spec 已定义的一致）
-- 每个 struct 携带该事件所需的最小数据
-- 示例结构（概念，非代码阶段）：
-  ```
-  OnMonsterReachedTable { laneIndex: int }
-  OnThrowResolved { laneIndex: int, result: ThrowResult }
-  OnDoughStateChanged { previousState: DoughState, newState: DoughState, ratio: float }
+- 格式：`On[名词][动词]`
+- 每个 struct 为 `readonly struct`，携带该事件所需的最小数据
+- 示例：
+  ```csharp
+  public readonly struct OnMonsterReachedTable
+  {
+      public readonly int LaneIndex;
+      public OnMonsterReachedTable(int laneIndex) { LaneIndex = laneIndex; }
+  }
   ```
 
 ### 订阅生命周期规则
 
 | 订阅位置 | 取消订阅位置 |
 |---------|-----------|
-| `OnEnable` | `OnDisable` |
+| `OnEnable` | `OnDisable` / `OnDestroy` |
 | `Awake` / `Start` | `OnDestroy` |
 
 **禁止：** 在 Update 内动态订阅/取消订阅。
@@ -171,11 +186,11 @@ Game.unity
 │   ├── LevelSystem
 │   └── TableSystem
 ├── _UI
-│   ├── HUD                 ← 比例条、HP 条、常驻信息
-│   ├── PauseMenu           ← 默认隐藏
-│   ├── DeathScreen         ← 默认隐藏
-│   ├── VictoryScreen       ← 默认隐藏
-│   └── LevelTransition     ← 默认隐藏
+│   ├── HUD_Canvas              ← 比例条、HP 条、常驻信息（游戏中始终可见）
+│   ├── PauseMenu_Canvas        ← 默认隐藏
+│   ├── LevelTransition_Canvas  ← 默认隐藏
+│   ├── Death_Canvas            ← 默认隐藏
+│   └── Victory_Canvas          ← 默认隐藏
 └── _World
     ├── Lanes               ← 5 条球道静态对象
     ├── MonsterContainer    ← 怪物运行时生成在此节点下
@@ -191,29 +206,25 @@ Game.unity
 
 ```
 Assets/
+├── Editor/                             ← Editor-only asmdef + 工具（与 Scripts/ 平级）
+│   ├── GWBGameJam.Editor.asmdef
+│   └── LaneCalculatorEditorWindow.cs
 ├── Scenes/
 │   ├── MainMenu.unity
 │   └── Game.unity
 ├── Scripts/
-│   ├── GameLoop/
-│   ├── Lane/
-│   ├── Monster/
-│   ├── Dough/
-│   ├── Baking/
-│   ├── Throw/
-│   ├── Level/
-│   ├── Table/
-│   ├── UI/
+│   ├── GWBGameJam.Runtime.asmdef       ← 覆盖 Scripts/ 下所有非 Editor 代码
+│   ├── Core/               ← EventBus、GameLoop、GameEnums 等共用基础类
+│   ├── Config/             ← 所有 ScriptableObject 类定义及配套 [Serializable] 数据类（如 LevelData、LaneWaypoints）
 │   ├── Events/             ← 所有 Event struct 定义
-│   ├── Config/             ← 所有 ScriptableObject 类定义
-│   ├── Core/               ← EventBus、共用枚举、共用工具类
-│   └── Editor/             ← Lane 计算器等 Editor-only 工具
+│   ├── Systems/            ← 所有游戏系统 MonoBehaviour（LaneManager、DoughSystem 等）
+│   └── UI/                 ← UI 逻辑脚本（UISystem、RatioBar 等）
 ├── Prefabs/
 │   ├── Monsters/
 │   │   ├── Monster_A.prefab
 │   │   ├── Monster_B.prefab
 │   │   └── Monster_C.prefab
-│   ├── Projectiles/
+│   ├── Projectile/                     ← 单数（与已建目录一致）
 │   │   └── Bread.prefab
 │   └── UI/
 │       └── （各菜单 Prefab）
@@ -234,26 +245,41 @@ Assets/
 └── Fonts/
 ```
 
+> **为什么不用按系统分子目录？**
+> 游戏 Jam 规模下，`Scripts/Systems/LaneManager.cs` 这样的两层路径已足够定位。
+> 按类型分（Core/Config/Events/Systems/UI）比按系统分有更高的可读性：查 Event 看 Events/，查配置看 Config/，不需要知道是哪个系统。
+
 ---
 
 ## 命名规范
 
 ### Namespace
-- 所有运行时代码：`namespace GWBGameJam`
-- Editor 工具：`namespace GWBGameJam.Editor`
-- 不使用子命名空间（减少 game jam 书写负担）
+- **所有代码（含 Editor 工具）统一使用：`namespace GWBGameJam`**
+- 不使用子命名空间（CodingRules 013 规定，减少 game jam 书写负担）
 
 ### 类与文件
 | 类型 | 格式 | 示例 |
 |------|------|------|
-| MonoBehaviour 系统 | `[System]Manager` | `MonsterManager` |
+| MonoBehaviour 系统 | 以各 System Spec 定义为准（见下） | `LaneManager`、`DoughSystem`、`MonsterController` |
 | ScriptableObject 配置 | `[System]Config` | `MonsterConfig` |
 | ScriptableObject 数据 | `[Name]Data` | `MonsterData` |
-| 纯数据类/结构 | PascalCase | `WaypointData` |
+| 纯数据类/结构 | PascalCase | `LaneWaypoints` |
 | 枚举 | PascalCase | `DoughState`, `BakingState` |
 | Event Struct | `On[名词][动词]` | `OnTableDestroyed` |
 | Interface | `I[能力]` | `IDamageable` |
 | Editor 工具 | `[Name]EditorWindow` | `LaneCalculatorEditorWindow` |
+
+**MonoBehaviour 系统类名（由各 Spec 定义，此处汇总）：**
+
+| GameObject 节点 | 主脚本 | 附属脚本 |
+|----------------|--------|---------|
+| LaneSystem | `LaneManager` | `LaneHoverDetector`（挂在 Collider 子节点） |
+| MonsterSystem | `MonsterSystem` | `MonsterController`（挂在怪物 Prefab 上） |
+| DoughSystem | `DoughSystem` | — |
+| BakingSystem | `BakingSystem` | — |
+| ThrowSystem | `ThrowSystem` | — |
+| LevelSystem | `LevelSystem` | — |
+| TableSystem | `TableSystem` | — |
 
 ### 资产文件
 | 资产类型 | 格式 | 示例 |
@@ -270,14 +296,15 @@ Assets/
 
 ```
 Assets/Scripts/GWBGameJam.Runtime.asmdef
-    └── 覆盖 Scripts/ 下所有非 Editor 代码
+    └── 覆盖 Scripts/ 下所有非 Editor 代码（Core / Config / Events / Systems / UI）
 
-Assets/Scripts/Editor/GWBGameJam.Editor.asmdef
-    └── 覆盖 Scripts/Editor/ 下所有 Editor 工具
+Assets/Editor/GWBGameJam.Editor.asmdef      ← 注意：在 Assets/Editor/，不是 Assets/Scripts/Editor/
+    └── 覆盖 Assets/Editor/ 下所有 Editor-only 工具
     └── 引用 GWBGameJam.Runtime.asmdef
+    └── includePlatforms: [ "Editor" ]
 ```
 
-**目的：** 确保 Editor 工具代码不被编译进正式 Build。
+**目的：** 确保 Editor 工具代码不被编译进正式 Build。Editor/ 目录与 Scripts/ 平级，隔离更干净。
 
 ---
 
@@ -320,7 +347,7 @@ Assets/Scripts/Editor/GWBGameJam.Editor.asmdef
 - [ ] 项目中无任何 `GameObject.Find` 调用（Grep 验证）
 - [ ] 项目中无任何 Singleton 实现（Grep `Instance` 验证）
 - [ ] 所有 EventBus Subscribe 调用，在同类中有对应 Unsubscribe（ReviewChecklist 验证）
-- [ ] 所有 ScriptableObject 类位于 `Scripts/Config/` 目录
+- [ ] 所有 ScriptableObject 类及配套 [Serializable] 数据类位于 `Scripts/Config/` 目录
 - [ ] 所有 Event Struct 位于 `Scripts/Events/` 目录
 - [ ] Game.unity 中 GameObject 层级与本文档结构一致
 - [ ] `GWBGameJam.Runtime.asmdef` 和 `GWBGameJam.Editor.asmdef` 存在且配置正确

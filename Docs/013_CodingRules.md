@@ -197,7 +197,7 @@ Assets/
 │   ├── Core/           ← GameLoop.cs, GameEnums.cs, EventBus.cs
 │   ├── Events/         ← 所有 Event Struct（每个 struct 一个文件）
 │   ├── Systems/        ← LaneSystem, MonsterSystem, DoughSystem 等
-│   ├── Config/         ← 所有 SO 定义类
+│   ├── Config/         ← 所有 SO 定义类及配套 [Serializable] 数据类（LevelData、LaneWaypoints）
 │   └── UI/             ← UISystem.cs 及 UI 相关脚本
 ├── Editor/             ← LaneCalculator 等 Editor 工具（GWBGameJam.Editor 程序集）
 ├── Prefabs/
