@@ -361,12 +361,12 @@ MainMenu.unity：
 |------|------|------|
 | T01 | Assembly Definitions + 目录 | ✅ 完成 |
 | T02 | GameEnums + EventBus | ✅ 完成 |
-| T03 | SO 类定义（10 个） | ✅ 完成 |
+| T03 | SO 类定义（12 个） | ✅ 完成 |
 | T04 | Event Structs（8 个文件）| ✅ 完成 |
-| T05 | SO Assets 创建与填值 | 🔲 待 Unity 手动操作 |
+| T05 | SO Assets 创建与填值 | ✅ 完成（手动）|
 | T06 | GameLoop | ✅ 完成 |
-| T07 | 场景层级搭建 | ⬜ 未开始 |
-| T08 | LaneSystem | ⬜ 未开始 |
+| T07 | 场景层级搭建 | ✅ 完成（手动）|
+| T08 | LaneSystem | ✅ 完成 |
 | T09 | DoughSystem | ⬜ 未开始 |
 | T10 | TableSystem | ⬜ 未开始 |
 | T11 | MonsterSystem | ⬜ 未开始 |

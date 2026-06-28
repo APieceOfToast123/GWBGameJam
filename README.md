@@ -105,6 +105,26 @@ GWBGameJam/
 
 ---
 
+## 当前开发进度
+
+> 最后更新：2026-06-27
+
+| 阶段 | 状态 | 详情 |
+|------|------|------|
+| Spec / 设计文档 | ✅ 全部完成 | 14 份文档，全部 Approved |
+| Architecture | ✅ **已冻结 v1.1** | Architecture v1.1 为唯一 Source of Truth |
+| 基础设施（T01-T04, T06）| ✅ 完成 | asmdef、枚举、EventBus、SO 类、GameLoop |
+| 手动 Unity 操作（T05, T07）| ✅ 完成 | SO Assets 已创建；Game.unity 层级已建立 |
+| LaneSystem（T08）| ✅ 完成 | LaneManager + LaneHoverDetector |
+| 核心系统（T09-T14）| ⬜ 待开发 | DoughSystem → TableSystem → MonsterSystem → BakingSystem → ThrowSystem → LevelSystem |
+| UI（T15-T17）| ⬜ 待开发 | Canvas 切换、RatioBar、BakingIndicator、HP 条 |
+| DevTools（T18）| ⬜ 待开发 | LaneCalculator Editor 工具 |
+| Prefab / 连线 / 集成（T19-T22）| ⬜ 待开发 | 手动 Unity 操作 + 端到端测试 |
+
+**下一步：T09 DoughSystem**
+
+---
+
 ## 关键文档
 
 | 文档 | 说明 |
