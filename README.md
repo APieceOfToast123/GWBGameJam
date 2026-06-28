@@ -25,7 +25,7 @@ GWB Game Jam 参赛项目。Unity 2D 揉面团小游戏。
 ## 快速开始
 
 ```bash
-git clone <repo-url>
+git clone https://github.com/APieceOfToast123/GWBGameJam.git
 ```
 
 用 Unity Hub 打开 `D:\Unity Workplace\GWBGameJam`，等待包导入完成即可。
