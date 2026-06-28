@@ -1,4 +1,4 @@
-# GWBGameJam — 揉面团
+# GWBGameJam — 糕点师
 
 GWB Game Jam 参赛项目。Unity 2D 揉面团小游戏。
 
