@@ -91,7 +91,8 @@ namespace GWBGameJam
         public void DefeatMonster(MonsterController monster)
         {
             if (monster == null || !IsValidLane(monster.LaneIndex)) return;
-            GetLaneList(monster.LaneIndex).Remove(monster);
+            if (!GetLaneList(monster.LaneIndex).Remove(monster)) return;
+
             monster.Defeat();
         }
 
