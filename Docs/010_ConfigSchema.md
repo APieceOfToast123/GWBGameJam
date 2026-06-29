@@ -1,5 +1,7 @@
 # 010 ConfigSchema Spec
 
+> 2026-06-29 Balance Revision：`DoughConfig.FlourClickMin = 0.3`、`DoughConfig.FlourClickMax = 2.0`、`DoughConfig.WaterSpeedMultiplierMin = 0.5`、`DoughConfig.WaterSpeedMultiplierMax = 3.0`。旧版固定 `FlourClickAmount` 与旧默认 `0.5~1.0 / 1.0~3.0` 描述由本修订覆盖。
+
 > 2026-06-29 Gameplay Revision（覆盖旧字段）：
 >
 > - DoughConfig：以 `FlourClickMin(0.5)`、`FlourClickMax(1.0)` 替代 FlourClickAmount；新增 `WaterSpeedMultiplierMin(1.0)`、`WaterSpeedMultiplierMax(3.0)`，保留 WaterFillRate 为基础速度。
@@ -182,6 +184,18 @@ Victory
 ---
 
 ## DoughConfig
+
+> 最新字段契约以本表为准；下方历史表格中的 `FlourClickAmount` 旧字段名不再使用。
+
+| 字段名 | 类型 | 默认值 | 合法范围 | 策划说明 |
+|--------|------|--------|---------|---------|
+| FlourClickMin | float | 0.3 | 0.1 ~ 2.0 | 每次左键单击抽取的最小加粉格数，比例条向面粉方向移动 |
+| FlourClickMax | float | 2.0 | FlourClickMin ~ 2.0 | 每次左键单击抽取的最大加粉格数 |
+| WaterFillRate | float | 0.5 | 0.1 ~ 3.0 | 右键长按时加水的基础速度 |
+| WaterSpeedMultiplierMin | float | 0.5 | 0.1 ~ WaterSpeedMultiplierMax | 每次右键按下抽取的最小加水速度倍率 |
+| WaterSpeedMultiplierMax | float | 3.0 | WaterSpeedMultiplierMin ~ 3.0 | 每次右键按下抽取的最大加水速度倍率，本次长按期间固定 |
+| InitialRatio | float | 1.0 | 0.0 ~ MaxRatio | 关卡开始及每次投掷后的重置比例 |
+| MaxRatio | float | 3.0 | ThresholdSoftToSoftest+0.1 ~ 10.0 | 比例值上限，必须大于 ThresholdSoftToSoftest |
 
 **职责：** 控制面团输入的响应速度与幅度。
 

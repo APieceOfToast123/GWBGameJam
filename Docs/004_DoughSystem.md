@@ -1,5 +1,7 @@
 # 004 DoughSystem Spec
 
+> 2026-06-29 Balance Revision：左键每次点击独立抽取 `FlourClickMin~FlourClickMax = 0.3~2.0` 格；右键每次按下独立抽取 `WaterSpeedMultiplierMin~WaterSpeedMultiplierMax = 0.5~3.0`，本次长按期间固定，松开后下次重新抽取。旧版 `FlourClickAmount` 与旧默认 `0.5~1.0 / 1.0~3.0` 描述由本修订覆盖。
+
 > 2026-06-29 Gameplay Revision：左键每次点击从 `FlourClickMin~FlourClickMax` 随机加粉；右键每次按下从 `WaterSpeedMultiplierMin~WaterSpeedMultiplierMax` 抽取倍率，本次长按期间固定，松开后清除。本文旧版固定 FlourClickAmount、固定 WaterFillRate 速度描述由本修订覆盖。
 
 ### Revision Acceptance Criteria
