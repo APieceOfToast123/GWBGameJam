@@ -4,6 +4,8 @@
 
 > 2026-06-29 Gameplay Revision：左键每次点击从 `FlourClickMin~FlourClickMax` 随机加粉；右键每次按下从 `WaterSpeedMultiplierMin~WaterSpeedMultiplierMax` 抽取倍率，本次长按期间固定，松开后清除。本文旧版固定 FlourClickAmount、固定 WaterFillRate 速度描述由本修订覆盖。
 
+> 2026-06-29 Visual 备注：桌上面团的"揉制长大"表现由独立 UI 组件 `DoughVisual` 负责（详见 009_UISystem），**纯视觉、不影响 DoughSystem 逻辑**（ratio/命中判定不变）。面团大小不进入任何判定。
+
 ### Revision Acceptance Criteria
 
 - [ ] 每次左键点击独立抽取 0.5～1 格并立即应用
