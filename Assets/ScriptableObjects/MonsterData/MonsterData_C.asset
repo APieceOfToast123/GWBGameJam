@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: MonsterData_C
   m_EditorClassIdentifier: 
   _monsterName: C
-  _idleSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  _hitSprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
+  _idleSprite: {fileID: 21300000, guid: ff0ca88e9e34e9247bcc2ad1a87e65c2, type: 3}
+  _hitSprite: {fileID: 21300000, guid: 90d92b708a631534283044fc1bc547ce, type: 3}
   _targetDoughState: 4
-  _displayScale: 1000
+  _displayScale: 40
