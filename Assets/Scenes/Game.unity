@@ -5346,9 +5346,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _tableSystem: {fileID: 1366306397}
-  _hearts: []
-  _fullSprite: {fileID: 0}
-  _emptySprite: {fileID: 0}
+  _hearts:
+  - {fileID: 1013337401}
+  - {fileID: 1214175395}
+  - {fileID: 372025609}
+  _fullSprite: {fileID: 21300000, guid: 2f1bf54ef5a42d242a4ff518b58fb5f1, type: 3}
+  _emptySprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
 --- !u!1 &1736088445
 GameObject:
   m_ObjectHideFlags: 0
