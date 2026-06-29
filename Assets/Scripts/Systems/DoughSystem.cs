@@ -16,8 +16,9 @@ namespace GWBGameJam
 
         public float GetCurrentRatio() => _currentRatio;
         public DoughState GetCurrentDoughState() => _currentDoughState;
+        public bool IsInputActive() => CanProcessInput;
 
-        private bool IsInputActive =>
+        private bool CanProcessInput =>
             !_hasConfigError &&
             _isPlayingState &&
             _isBakingIdle &&
@@ -67,7 +68,7 @@ namespace GWBGameJam
             if (Input.GetMouseButtonUp(1))
                 _activeWaterSpeedMultiplier = 1f;
 
-            if (!IsInputActive) return;
+            if (!CanProcessInput) return;
 
             if (Input.GetMouseButtonDown(0))
                 ApplyFlour();
