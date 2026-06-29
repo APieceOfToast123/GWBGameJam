@@ -10,6 +10,7 @@ namespace GWBGameJam
         [SerializeField] private GameObject _pauseMenuCanvas;
         [SerializeField] private GameObject _levelTransitionCanvas;
         [SerializeField] private GameObject _deathCanvas;
+        [SerializeField] private GameObject _gameOverMask;
         [SerializeField] private GameObject _victoryCanvas;
 
         [Header("Dynamic Text")]
@@ -61,11 +62,14 @@ namespace GWBGameJam
 
             bool isPlaying = e.NewState == GameState.Playing;
             bool isPaused  = e.NewState == GameState.Paused;
+            bool isDeath = e.NewState == GameState.Death;
 
             _hudCanvas.SetActive(isPlaying || isPaused);
             _pauseMenuCanvas.SetActive(isPaused);
             _levelTransitionCanvas.SetActive(e.NewState == GameState.LevelTransition);
-            _deathCanvas.SetActive(e.NewState == GameState.Death);
+            _deathCanvas.SetActive(isDeath);
+            if (_gameOverMask != null)
+                _gameOverMask.SetActive(isDeath);
             _victoryCanvas.SetActive(e.NewState == GameState.Victory);
 
             if (e.NewState == GameState.LevelTransition && _levelTransitionText != null)
