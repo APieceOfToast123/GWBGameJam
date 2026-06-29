@@ -9,7 +9,7 @@ namespace GWBGameJam
         [SerializeField] private RectTransform _doughRect;
 
         [SerializeField, Min(1f)] private float _maxScale = 3f;
-        [SerializeField, Min(0.1f)] private float _growDuration = 3f;
+        [SerializeField, Min(0.1f)] private float _growDuration = 5f;
 
         private float _heldTime;
         private bool _isPlayingState;

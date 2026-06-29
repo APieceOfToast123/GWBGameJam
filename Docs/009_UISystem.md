@@ -121,10 +121,10 @@ _UI/
 - 一张面团图（不分软硬、不随烤制变），UI Image，置于菜板 Image 之上，与桌板/菜板同在 Canvas 内（统一 CanvasScaler 缩放，无世界/像素错位）。
 - 显示/隐藏：`DoughSystem.GetCurrentDoughState() == None` 时隐藏（投掷飞行期间）；有面团时显示。
 - 揉制长大：仅在揉制阶段（Playing + BakingState==Idle，与 DoughSystem 输入门控一致）且任意鼠标键按住时，累计长大 `_heldTime += dt`（夹到 `_growDuration`）。
-  - `localScale = Lerp(1, _maxScale, _heldTime / _growDuration)`，默认 100% → 300%，按满 3 秒到上限。
+  - `localScale = Lerp(1, _maxScale, _heldTime / _growDuration)`，默认 100% → 300%，按满 5 秒到上限。
   - **松开不缩回**，保持当前大小;再按从当前值继续累计。
 - 重置（回 100%、_heldTime=0）：换新一坨面团时 —— `OnDoughStateChanged` 的 `None → 有面团`（投掷完成后）以及 `OnLevelStarted`。
-- 组件：`Assets/Scripts/UI/DoughVisual.cs`；可调字段 `_maxScale`(默认3) / `_growDuration`(默认3)。
+- 组件：`Assets/Scripts/UI/DoughVisual.cs`；可调字段 `_maxScale`(默认3) / `_growDuration`(默认5)。
 
 ---
 
