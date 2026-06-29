@@ -1,5 +1,7 @@
 # 002 LaneSystem Spec
 
+> 2026-06-29 Lane Highlight Art Revision：Game 场景的 5 条 Lane 使用 `Assets/image/background/微信图片_20260629233029_614_25.png` 至 `...618_25.png` 作为 HoveredSprite。NormalSprite 保持为空，平时由主背景图显示普通轨道；仅在按住空格进入烤制阶段时，鼠标所在轨道显示对应高亮图。
+
 | 字段 | 内容 |
 |------|------|
 | Version | 1.0 |
