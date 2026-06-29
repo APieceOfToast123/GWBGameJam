@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 19ac54ad3da8a684891d5e26125fff6e, type: 3}
   m_Name: BakingConfig
   m_EditorClassIdentifier: 
-  _softestCookDuration: 1.5
-  _mediumCookDuration: 2
-  _hardestCookDuration: 3
-  _perfectWindowDuration: 1
-  _burntWindowDuration: 1
+  _softestCookDuration: 0.1
+  _mediumCookDuration: 0.1
+  _hardestCookDuration: 0.1
+  _perfectWindowDuration: 0.9
+  _burntWindowDuration: 0.1
