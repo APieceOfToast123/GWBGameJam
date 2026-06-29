@@ -5,6 +5,8 @@ namespace GWBGameJam
 {
     public class ThrowSystem : MonoBehaviour
     {
+        private const float LaneEntryBlendTime = 0.25f;
+
         [SerializeField] private ThrowConfig _config;
         [SerializeField] private DoughSystem _doughSystem;
         [SerializeField] private MonsterSystem _monsterSystem;
@@ -18,12 +20,14 @@ namespace GWBGameJam
         private float _capturedRatio;
         private BakingState _capturedBakingState;
         private Vector2 _startPos;
+        private Vector2 _laneEntryPos;
         private Vector2 _targetPos;
         private int _targetLaneIndex;
         private float _flightTimer;
         private GameObject _activeProjectile;
         private bool _inFlight;
         private bool _isPlayingState;
+        private bool _hasLaneEntryPos;
         private bool _hasConfigError;
 
         private void Awake() => ValidateConfig();
@@ -62,8 +66,7 @@ namespace GWBGameJam
 
             _flightTimer += Time.deltaTime;
             float t = Mathf.Clamp01(_flightTimer / _config.ThrowDuration);
-            Vector2 position = Vector2.Lerp(_startPos, _targetPos, t)
-                               + Vector2.up * _config.PeakHeight * 4f * t * (1f - t);
+            Vector2 position = EvaluateProjectilePosition(t);
 
             if (_activeProjectile != null)
                 _activeProjectile.transform.position = position;
@@ -83,16 +86,36 @@ namespace GWBGameJam
             MonsterController target = _monsterSystem.GetMonsterInLane(_targetLaneIndex);
             if (target != null)
                 _targetPos = target.GetTargetPosition();
-            else if (!_laneManager.TryGetWaypoint(
-                         _targetLaneIndex,
-                         _monsterConfig.MoveStepCount / 2,
-                         out _targetPos))
+            else if (!_laneManager.TryGetWaypoint(_targetLaneIndex, 0, out _targetPos))
                 _targetPos = _startPos;
 
+            int laneEntryIndex = _monsterConfig.MoveStepCount - 1;
+            _hasLaneEntryPos = _laneManager.TryGetWaypoint(_targetLaneIndex, laneEntryIndex, out _laneEntryPos);
             _flightTimer = 0f;
             _activeProjectile = Instantiate(_projectilePrefab, _startPos, Quaternion.identity);
             _inFlight = true;
             EventBus<OnThrowStarted>.Publish(new OnThrowStarted(_targetLaneIndex));
+        }
+
+        private Vector2 EvaluateProjectilePosition(float t)
+        {
+            Vector2 pathPosition;
+            if (!_hasLaneEntryPos)
+            {
+                pathPosition = Vector2.Lerp(_startPos, _targetPos, t);
+            }
+            else if (t < LaneEntryBlendTime)
+            {
+                float entryT = Mathf.Clamp01(t / LaneEntryBlendTime);
+                pathPosition = Vector2.Lerp(_startPos, _laneEntryPos, entryT);
+            }
+            else
+            {
+                float laneT = Mathf.Clamp01((t - LaneEntryBlendTime) / (1f - LaneEntryBlendTime));
+                pathPosition = Vector2.Lerp(_laneEntryPos, _targetPos, laneT);
+            }
+
+            return pathPosition + Vector2.up * _config.PeakHeight * 4f * t * (1f - t);
         }
 
         private void CompleteThrow()

@@ -152,6 +152,29 @@ namespace GWBGameJam
             Assert.AreEqual(ThrowResult.EmptyLane, result);
         }
 
+        [Test]
+        public void ProjectilePathFollowsLaneAfterEntryBlend()
+        {
+            var throwConfig = CreateAsset<ThrowConfig>();
+            var throwSystem = CreateConfiguredThrowSystem(
+                CreateAsset<DoughStateBoundaryConfig>(),
+                BakingState.Cooked,
+                1f);
+
+            SetPrivateField(throwSystem, "_config", throwConfig);
+            SetPrivateField(throwSystem, "_startPos", Vector2.zero);
+            SetPrivateField(throwSystem, "_laneEntryPos", new Vector2(10f, 0f));
+            SetPrivateField(throwSystem, "_targetPos", new Vector2(10f, 10f));
+            SetPrivateField(throwSystem, "_hasLaneEntryPos", true);
+
+            var entryPosition = (Vector2)InvokePrivate(throwSystem, "EvaluateProjectilePosition", 0.25f);
+            var lanePosition = (Vector2)InvokePrivate(throwSystem, "EvaluateProjectilePosition", 0.5f);
+
+            Assert.AreEqual(10f, entryPosition.x, 0.001f);
+            Assert.AreEqual(10f, lanePosition.x, 0.001f);
+            Assert.Greater(lanePosition.y, entryPosition.y);
+        }
+
         private ThrowSystem CreateConfiguredThrowSystem(DoughStateBoundaryConfig boundaryConfig, BakingState bakingState, float ratio)
         {
             var throwSystem = CreateComponent<ThrowSystem>("ThrowSystem");
