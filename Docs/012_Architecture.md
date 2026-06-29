@@ -1,5 +1,7 @@
 # 012 Architecture Spec
 
+> 2026-06-29 Tech Revision：保持 MainMenu+Game 两场景与既有 EventBus 架构。MonsterSystem 的数据所有权从 `Monster[5]` 扩展为每道怪物集合；跨系统操作必须使用 MonsterSystem 公开的按实例 API。ThrowSystem 可读取只读怪物快照，但不得直接修改集合。每只怪物退场仍各自发布一次事件，LevelSystem 无需读取 MonsterSystem 内部计数。
+
 | 字段 | 内容 |
 |------|------|
 | Version | 1.1 |

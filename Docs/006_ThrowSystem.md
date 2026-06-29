@@ -1,5 +1,15 @@
 # 006 ThrowSystem Spec
 
+> 2026-06-29 Gameplay Revision：面包到达时读取目标球道当前怪物快照，最多处理 `MaxMonstersPerLane` 只。Cooked 面包分别对每只怪物执行比例判定并击杀所有匹配者；未匹配者保留。新增 PartialHit 与 WrongBake 结果。本文旧版单目标命中描述由本修订覆盖。
+
+### Revision Acceptance Criteria
+
+- [ ] 同道两只同类型怪物均匹配时，一次投掷击杀两只并生成两个爆炸
+- [ ] 同道两只不同类型怪物时，仅击杀比例匹配者，结果 PartialHit
+- [ ] 非 Cooked 面包不伤害任何怪物，结果 WrongBake
+- [ ] Cooked 但无任何比例匹配时结果 WrongRatio
+- [ ] 空道结果 EmptyLane
+
 | 字段 | 内容 |
 |------|------|
 | Version | 1.0 |

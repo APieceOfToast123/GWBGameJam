@@ -1,5 +1,14 @@
 # 003 MonsterSystem Spec
 
+> 2026-06-29 Gameplay Revision：同一球道容量改为 `MonsterConfig.MaxMonstersPerLane`（默认 2）。本文旧版“单道最多一只”描述均由本修订覆盖。MonsterSystem 改为维护每道怪物集合，并提供按实例查询、击败和错误反馈 API；各怪物仍独立执行原有 8 格移动、缩放与碰桌逻辑。
+
+### Revision Acceptance Criteria
+
+- [ ] 单道 0 或 1 只怪物时允许生成；达到 MaxMonstersPerLane 时拒绝生成
+- [ ] `GetMonstersInLane` 返回该道存活怪物快照，按距桌子由近到远排序
+- [ ] `DefeatMonster(MonsterController)` 仅击败指定实例并广播一次 OnMonsterDefeated
+- [ ] 两只怪物独立移动、碰桌和退场，不覆盖彼此引用
+
 | 字段 | 内容 |
 |------|------|
 | Version | 1.0 |

@@ -12,6 +12,7 @@ namespace GWBGameJam
         private bool _isPlayingState;
         private bool _isBakingIdle = true;
         private bool _hasConfigError;
+        private float _activeWaterSpeedMultiplier = 1f;
 
         public float GetCurrentRatio() => _currentRatio;
         public DoughState GetCurrentDoughState() => _currentDoughState;
@@ -39,6 +40,8 @@ namespace GWBGameJam
                 Debug.LogError("[DoughSystem] DoughStateBoundaryConfig 未赋值");
                 _hasConfigError = true;
             }
+            if (_config != null)
+                _config.Validate();
         }
 
         private void OnEnable()
@@ -61,24 +64,35 @@ namespace GWBGameJam
 
         private void Update()
         {
+            if (Input.GetMouseButtonUp(1))
+                _activeWaterSpeedMultiplier = 1f;
+
             if (!IsInputActive) return;
 
             if (Input.GetMouseButtonDown(0))
                 ApplyFlour();
 
+            if (Input.GetMouseButtonDown(1))
+                _activeWaterSpeedMultiplier = Random.Range(
+                    _config.WaterSpeedMultiplierMin,
+                    _config.WaterSpeedMultiplierMax);
+
             if (Input.GetMouseButton(1))
                 ApplyWater();
+
         }
 
         private void ApplyFlour()
         {
-            _currentRatio = Mathf.Clamp(_currentRatio - _config.FlourClickAmount, 0f, _config.MaxRatio);
+            float amount = Random.Range(_config.FlourClickMin, _config.FlourClickMax);
+            _currentRatio = Mathf.Clamp(_currentRatio - amount, 0f, _config.MaxRatio);
             DeriveAndPublishState();
         }
 
         private void ApplyWater()
         {
-            _currentRatio = Mathf.Clamp(_currentRatio + _config.WaterFillRate * Time.deltaTime, 0f, _config.MaxRatio);
+            float amount = _config.WaterFillRate * _activeWaterSpeedMultiplier * Time.deltaTime;
+            _currentRatio = Mathf.Clamp(_currentRatio + amount, 0f, _config.MaxRatio);
             DeriveAndPublishState();
         }
 

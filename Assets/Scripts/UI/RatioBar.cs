@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 
 namespace GWBGameJam
@@ -14,6 +15,8 @@ namespace GWBGameJam
         [SerializeField] private RectTransform _softestRefLine;
         [SerializeField] private RectTransform _mediumRefLine;
         [SerializeField] private RectTransform _hardestRefLine;
+        [SerializeField] private TMP_Text _doughNameText;
+        [SerializeField] private GameObject _validCheckmark;
 
         [SerializeField, Min(0.1f)] private float _elasticSpeed = 12f;
 
@@ -62,6 +65,29 @@ namespace GWBGameJam
 
             _displayedRatio = Mathf.Lerp(_displayedRatio, _doughSystem.GetCurrentRatio(), _elasticSpeed * Time.deltaTime);
             UpdateIndicatorPosition(_displayedRatio);
+            UpdateDoughStateFeedback();
+        }
+
+        private void UpdateDoughStateFeedback()
+        {
+            DoughState state = _doughSystem.GetCurrentDoughState();
+            float center = _boundaryConfig.GetCenterRatio(state);
+            bool isValid = center >= 0f
+                           && Mathf.Abs(_doughSystem.GetCurrentRatio() - center)
+                           <= _boundaryConfig.ToleranceHalfWidth;
+
+            if (_validCheckmark != null)
+                _validCheckmark.SetActive(isValid);
+            if (_doughNameText != null)
+                _doughNameText.text = state switch
+                {
+                    DoughState.TooSoft => "浆糊",
+                    DoughState.Softest => "最软面包",
+                    DoughState.Medium => "中等面包",
+                    DoughState.Hardest => "最硬面包",
+                    DoughState.TooHard => "干面团",
+                    _ => string.Empty
+                };
         }
 
         private void UpdateIndicatorPosition(float ratio)

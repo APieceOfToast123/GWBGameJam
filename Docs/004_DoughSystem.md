@@ -1,5 +1,14 @@
 # 004 DoughSystem Spec
 
+> 2026-06-29 Gameplay Revision：左键每次点击从 `FlourClickMin~FlourClickMax` 随机加粉；右键每次按下从 `WaterSpeedMultiplierMin~WaterSpeedMultiplierMax` 抽取倍率，本次长按期间固定，松开后清除。本文旧版固定 FlourClickAmount、固定 WaterFillRate 速度描述由本修订覆盖。
+
+### Revision Acceptance Criteria
+
+- [ ] 每次左键点击独立抽取 0.5～1 格并立即应用
+- [ ] 右键按下时仅抽取一次倍率，持续按住期间使用同一倍率
+- [ ] 松开右键后，下次按下重新抽取倍率
+- [ ] 暂停、烤制或 DoughState=None 时不抽取也不应用随机输入
+
 | 字段 | 内容 |
 |------|------|
 | Version | 1.0 |

@@ -1,5 +1,15 @@
 # 005 BakingSystem Spec
 
+> 2026-06-29 Gameplay Revision：按下空格时锁定当前 DoughState 和对应 CookDuration。Softest=1.5s、Medium=2s、Hardest=3s；TooSoft 使用 Softest 时长，TooHard 使用 Hardest 时长。完成后 `PerfectWindowDuration`（默认 1s）为 Cooked，随后为 Burnt；再经过 `BurntWindowDuration`（默认 1s）强制投掷。本文旧版统一 0.5/1.5/2.5 阈值由本修订覆盖。
+
+### Revision Acceptance Criteria
+
+- [ ] 空格按下时锁定本次 CookDuration，之后比例变化不影响计时阈值
+- [ ] timer<CookDuration 为 Undercooked，无伤害
+- [ ] 完成后的 1 秒为 Cooked，可造成伤害
+- [ ] 完美窗口后进入 Burnt，无伤害
+- [ ] Burnt 持续 1 秒后强制投掷
+
 | 字段 | 内容 |
 |------|------|
 | Version | 1.0 |

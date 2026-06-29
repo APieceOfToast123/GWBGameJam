@@ -39,13 +39,43 @@ namespace GWBGameJam
         }
 
         [Test]
+        public void RevisedConfigDefaultsMatchGameplayRules()
+        {
+            var bakingConfig = CreateAsset<BakingConfig>();
+            var doughConfig = CreateAsset<DoughConfig>();
+            var monsterConfig = CreateAsset<MonsterConfig>();
+
+            Assert.AreEqual(1.5f, bakingConfig.SoftestCookDuration);
+            Assert.AreEqual(2f, bakingConfig.MediumCookDuration);
+            Assert.AreEqual(3f, bakingConfig.HardestCookDuration);
+            Assert.AreEqual(0.5f, doughConfig.FlourClickMin);
+            Assert.AreEqual(1f, doughConfig.FlourClickMax);
+            Assert.AreEqual(3f, doughConfig.WaterSpeedMultiplierMax);
+            Assert.AreEqual(2, monsterConfig.MaxMonstersPerLane);
+        }
+
+        [Test]
+        public void ThrowCompletedCarriesDefeatedCount()
+        {
+            var completed = new OnThrowCompleted(1, ThrowResult.PartialHit, 1);
+
+            Assert.AreEqual(1, completed.LaneIndex);
+            Assert.AreEqual(ThrowResult.PartialHit, completed.Result);
+            Assert.AreEqual(1, completed.DefeatedCount);
+        }
+
+        [Test]
         public void BakingSystemThrowsToCurrentHoveredLaneAtThrowTime()
         {
             var laneManager = CreateComponent<LaneManager>("LaneManager");
             var bakingSystem = CreateComponent<BakingSystem>("BakingSystem");
+            var doughSystem = CreateComponent<DoughSystem>("DoughSystem");
+            var bakingConfig = CreateAsset<BakingConfig>();
 
             SetPrivateField(laneManager, "_hoveredLaneIndex", 2);
             SetPrivateField(bakingSystem, "_laneManager", laneManager);
+            SetPrivateField(bakingSystem, "_doughSystem", doughSystem);
+            SetPrivateField(bakingSystem, "_config", bakingConfig);
 
             bool received = false;
             OnThrowRequested capturedRequest = default;
@@ -95,7 +125,7 @@ namespace GWBGameJam
 
             var result = (ThrowResult)InvokePrivate(throwSystem, "DetermineResult", monster);
 
-            Assert.AreEqual(ThrowResult.WrongRatio, result);
+            Assert.AreEqual(ThrowResult.WrongBake, result);
         }
 
         [Test]

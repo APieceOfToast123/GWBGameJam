@@ -14,9 +14,13 @@ namespace GWBGameJam
         private BakingState _currentBakingState = BakingState.Idle;
         private bool _isPlayingState;
         private bool _hasConfigError;
+        private float _activeCookDuration;
 
         public float GetBakingTimer() => _bakingTimer;
         public BakingState GetBakingState() => _currentBakingState;
+        public float GetActiveCookDuration() => _activeCookDuration;
+        public float GetActiveTotalDuration() =>
+            _activeCookDuration + _config.PerfectWindowDuration + _config.BurntWindowDuration;
 
         private void Awake()
         {
@@ -80,6 +84,7 @@ namespace GWBGameJam
         private void StartBaking()
         {
             _bakingTimer = 0f;
+            _activeCookDuration = ResolveCookDuration(_doughSystem.GetCurrentDoughState());
             BakingState prev = _currentBakingState;
             _currentBakingState = BakingState.Undercooked;
             EventBus<OnBakingStateChanged>.Publish(new OnBakingStateChanged(BakingState.Undercooked, prev));
@@ -89,12 +94,27 @@ namespace GWBGameJam
         {
             _bakingTimer += Time.deltaTime;
 
-            if (_currentBakingState == BakingState.Undercooked && _bakingTimer >= _config.UndercookedDuration)
+            if (_currentBakingState == BakingState.Undercooked && _bakingTimer >= _activeCookDuration)
                 TransitionTo(BakingState.Cooked);
-            else if (_currentBakingState == BakingState.Cooked && _bakingTimer >= _config.CookedDuration)
+            else if (_currentBakingState == BakingState.Cooked
+                     && _bakingTimer >= _activeCookDuration + _config.PerfectWindowDuration)
                 TransitionTo(BakingState.Burnt);
-            else if (_currentBakingState == BakingState.Burnt && _bakingTimer >= _config.BurntForcedThrowDuration)
+            else if (_currentBakingState == BakingState.Burnt
+                     && _bakingTimer >= GetActiveTotalDuration())
                 TriggerThrow();
+        }
+
+        private float ResolveCookDuration(DoughState state)
+        {
+            return state switch
+            {
+                DoughState.TooSoft => _config.SoftestCookDuration,
+                DoughState.Softest => _config.SoftestCookDuration,
+                DoughState.Medium => _config.MediumCookDuration,
+                DoughState.Hardest => _config.HardestCookDuration,
+                DoughState.TooHard => _config.HardestCookDuration,
+                _ => _config.MediumCookDuration
+            };
         }
 
         private void TransitionTo(BakingState newState)
@@ -110,6 +130,7 @@ namespace GWBGameJam
             BakingState throwBakingState = _currentBakingState;
             BakingState prev = _currentBakingState;
             _bakingTimer = 0f;
+            _activeCookDuration = 0f;
             _currentBakingState = BakingState.Idle;
 
             EventBus<OnThrowRequested>.Publish(new OnThrowRequested(laneIndex, throwBakingState));
@@ -148,6 +169,7 @@ namespace GWBGameJam
         {
             BakingState prev = _currentBakingState;
             _bakingTimer = 0f;
+            _activeCookDuration = 0f;
             _currentBakingState = BakingState.Idle;
             EventBus<OnBakingStateChanged>.Publish(new OnBakingStateChanged(BakingState.Idle, prev));
         }

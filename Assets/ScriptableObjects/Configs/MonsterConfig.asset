@@ -60,3 +60,4 @@ MonoBehaviour:
   _moveDuration: 0.3
   _wrongHitFlashCount: 2
   _wrongHitFlashDuration: 0.1
+  _maxMonstersPerLane: 2

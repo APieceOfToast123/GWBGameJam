@@ -9,6 +9,7 @@ namespace GWBGameJam
 
         public MonsterData Data { get; private set; }
         public int LaneIndex { get; private set; }
+        public int PositionIndex => _posIndex;
 
         private MonsterConfig _config;
         private LaneManager _laneManager;

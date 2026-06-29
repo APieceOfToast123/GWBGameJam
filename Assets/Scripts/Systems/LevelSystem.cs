@@ -86,7 +86,7 @@ namespace GWBGameJam
 
             var available = new List<int>();
             for (int i = 0; i < 5; i++)
-                if (!_monsterSystem.IsLaneOccupied(i))
+                if (!_monsterSystem.IsLaneFull(i))
                     available.Add(i);
 
             if (available.Count == 0)

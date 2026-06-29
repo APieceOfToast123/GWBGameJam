@@ -20,6 +20,8 @@ namespace GWBGameJam
         private int _wrongHitFlashCount = 2;
         [SerializeField, Min(0.05f), FormerlySerializedAs("WrongHitFlashDuration")]
         private float _wrongHitFlashDuration = 0.1f;
+        [SerializeField, Range(1, 4)]
+        private int _maxMonstersPerLane = 2;
 
         public float MoveIntervalSeconds => _moveIntervalSeconds;
         public int MoveStepCount => _moveStepCount;
@@ -28,6 +30,7 @@ namespace GWBGameJam
         public float MoveDuration => _moveDuration;
         public int WrongHitFlashCount => _wrongHitFlashCount;
         public float WrongHitFlashDuration => _wrongHitFlashDuration;
+        public int MaxMonstersPerLane => _maxMonstersPerLane;
 
         private void OnValidate() => Validate();
 
@@ -43,6 +46,11 @@ namespace GWBGameJam
                 Debug.LogError("[MonsterConfig] PendingMoveThreshold 必须小于 MoveIntervalSeconds，已自动修正");
                 _pendingMoveThreshold = _moveIntervalSeconds * 0.5f;
             }
+            if (_maxMonstersPerLane < 1 || _maxMonstersPerLane > 4)
+            {
+                Debug.LogError("[MonsterConfig] MaxMonstersPerLane 必须在 1~4，已强制设为 2");
+                _maxMonstersPerLane = 2;
+            }
         }
 
         private static AnimationCurve DefaultScaleCurve()
@@ -51,8 +59,7 @@ namespace GWBGameJam
                 new Keyframe(0f, 0.01f),
                 new Keyframe(2f, 0.50f),
                 new Keyframe(5f, 1.00f),
-                new Keyframe(7f, 1.50f)
-            );
+                new Keyframe(7f, 1.50f));
         }
     }
 }

@@ -10,6 +10,12 @@ namespace GWBGameJam
     {
         public readonly int LaneIndex;
         public readonly ThrowResult Result;
-        public OnThrowCompleted(int laneIndex, ThrowResult result) { LaneIndex = laneIndex; Result = result; }
+        public readonly int DefeatedCount;
+        public OnThrowCompleted(int laneIndex, ThrowResult result, int defeatedCount = 0)
+        {
+            LaneIndex = laneIndex;
+            Result = result;
+            DefeatedCount = defeatedCount;
+        }
     }
 }

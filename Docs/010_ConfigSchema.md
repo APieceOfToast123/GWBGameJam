@@ -1,5 +1,12 @@
 # 010 ConfigSchema Spec
 
+> 2026-06-29 Gameplay Revision（覆盖旧字段）：
+>
+> - DoughConfig：以 `FlourClickMin(0.5)`、`FlourClickMax(1.0)` 替代 FlourClickAmount；新增 `WaterSpeedMultiplierMin(1.0)`、`WaterSpeedMultiplierMax(3.0)`，保留 WaterFillRate 为基础速度。
+> - BakingConfig：以 `SoftestCookDuration(1.5)`、`MediumCookDuration(2.0)`、`HardestCookDuration(3.0)`、`PerfectWindowDuration(1.0)`、`BurntWindowDuration(1.0)` 替代统一三阈值。
+> - MonsterConfig：新增 `MaxMonstersPerLane(int, 默认2, 合法范围1~4)`。
+> - ThrowResult：新增 `PartialHit`、`WrongBake`。
+
 | 字段 | 内容 |
 |------|------|
 | Version | 1.3 |

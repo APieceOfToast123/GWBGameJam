@@ -1,5 +1,7 @@
 # 007 LevelSystem Spec
 
+> 2026-06-29 Gameplay Revision：生成候选球道从“空球道”改为“怪物数量小于 MonsterConfig.MaxMonstersPerLane 的球道”。9/7/5 秒间隔、10/15/20 总数、三类型等概率、t=0 首只生成与两场景流程保持不变。
+
 | 字段 | 内容 |
 |------|------|
 | Version | 1.0 |

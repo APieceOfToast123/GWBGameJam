@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace GWBGameJam
@@ -25,22 +26,20 @@ namespace GWBGameJam
         private bool _isPlayingState;
         private bool _hasConfigError;
 
-        private void Awake()
-        {
-            ValidateConfig();
-        }
+        private void Awake() => ValidateConfig();
 
         private void ValidateConfig()
         {
-            if (_config == null)        { Debug.LogError("[ThrowSystem] ThrowConfig 未赋值");               _hasConfigError = true; }
-            if (_doughSystem == null)   { Debug.LogError("[ThrowSystem] DoughSystem 未赋值");               _hasConfigError = true; }
-            if (_monsterSystem == null) { Debug.LogError("[ThrowSystem] MonsterSystem 未赋值");             _hasConfigError = true; }
-            if (_laneManager == null)   { Debug.LogError("[ThrowSystem] LaneManager 未赋值");               _hasConfigError = true; }
-            if (_monsterConfig == null) { Debug.LogError("[ThrowSystem] MonsterConfig 未赋值");             _hasConfigError = true; }
-            if (_boundaryConfig == null){ Debug.LogError("[ThrowSystem] DoughStateBoundaryConfig 未赋值");  _hasConfigError = true; }
-            if (_throwOrigin == null)   { Debug.LogError("[ThrowSystem] ThrowOrigin Transform 未赋值");     _hasConfigError = true; }
-            if (_projectilePrefab == null) { Debug.LogError("[ThrowSystem] ProjectilePrefab 未赋值");       _hasConfigError = true; }
-            if (_explosionPrefab == null)  Debug.LogWarning("[ThrowSystem] ExplosionPrefab 未赋值，命中时无爆炸特效");
+            if (_config == null) { Debug.LogError("[ThrowSystem] ThrowConfig 未赋值"); _hasConfigError = true; }
+            if (_doughSystem == null) { Debug.LogError("[ThrowSystem] DoughSystem 未赋值"); _hasConfigError = true; }
+            if (_monsterSystem == null) { Debug.LogError("[ThrowSystem] MonsterSystem 未赋值"); _hasConfigError = true; }
+            if (_laneManager == null) { Debug.LogError("[ThrowSystem] LaneManager 未赋值"); _hasConfigError = true; }
+            if (_monsterConfig == null) { Debug.LogError("[ThrowSystem] MonsterConfig 未赋值"); _hasConfigError = true; }
+            if (_boundaryConfig == null) { Debug.LogError("[ThrowSystem] DoughStateBoundaryConfig 未赋值"); _hasConfigError = true; }
+            if (_throwOrigin == null) { Debug.LogError("[ThrowSystem] ThrowOrigin Transform 未赋值"); _hasConfigError = true; }
+            if (_projectilePrefab == null) { Debug.LogError("[ThrowSystem] ProjectilePrefab 未赋值"); _hasConfigError = true; }
+            if (_explosionPrefab == null)
+                Debug.LogWarning("[ThrowSystem] ExplosionPrefab 未赋值，命中时无爆炸特效");
         }
 
         private void OnEnable()
@@ -53,7 +52,6 @@ namespace GWBGameJam
         {
             EventBus<OnThrowRequested>.Unsubscribe(HandleThrowRequested);
             EventBus<OnGameStateChanged>.Unsubscribe(HandleGameStateChanged);
-            // Destroy in-flight projectile without publishing events (scene may be unloading)
             if (_activeProjectile != null)
                 Destroy(_activeProjectile);
         }
@@ -64,64 +62,87 @@ namespace GWBGameJam
 
             _flightTimer += Time.deltaTime;
             float t = Mathf.Clamp01(_flightTimer / _config.ThrowDuration);
-
-            Vector2 pos = Vector2.Lerp(_startPos, _targetPos, t)
-                        + Vector2.up * _config.PeakHeight * 4f * t * (1f - t);
+            Vector2 position = Vector2.Lerp(_startPos, _targetPos, t)
+                               + Vector2.up * _config.PeakHeight * 4f * t * (1f - t);
 
             if (_activeProjectile != null)
-                _activeProjectile.transform.position = pos;
-
+                _activeProjectile.transform.position = position;
             if (t >= 1f)
                 CompleteThrow();
         }
 
         private void HandleThrowRequested(OnThrowRequested e)
         {
-            if (_hasConfigError) return;
+            if (_hasConfigError || _inFlight) return;
 
             _targetLaneIndex = e.LaneIndex;
             _capturedRatio = _doughSystem.GetCurrentRatio();
             _capturedBakingState = e.BakingState;
             _startPos = _throwOrigin.position;
 
-            // Target position: monster's predicted pos if present, else mid-lane waypoint
-            MonsterController monster = _monsterSystem.GetMonsterInLane(_targetLaneIndex);
-            if (monster != null)
-            {
-                _targetPos = _monsterSystem.GetTargetPosition(_targetLaneIndex);
-            }
-            else if (!_laneManager.TryGetWaypoint(_targetLaneIndex, _monsterConfig.MoveStepCount / 2, out _targetPos))
-            {
+            MonsterController target = _monsterSystem.GetMonsterInLane(_targetLaneIndex);
+            if (target != null)
+                _targetPos = target.GetTargetPosition();
+            else if (!_laneManager.TryGetWaypoint(
+                         _targetLaneIndex,
+                         _monsterConfig.MoveStepCount / 2,
+                         out _targetPos))
                 _targetPos = _startPos;
-            }
 
             _flightTimer = 0f;
             _activeProjectile = Instantiate(_projectilePrefab, _startPos, Quaternion.identity);
             _inFlight = true;
-
             EventBus<OnThrowStarted>.Publish(new OnThrowStarted(_targetLaneIndex));
         }
 
         private void CompleteThrow()
         {
             _inFlight = false;
+            IReadOnlyList<MonsterController> monsters =
+                _monsterSystem.GetMonstersInLane(_targetLaneIndex);
 
-            MonsterController monster = _monsterSystem.GetMonsterInLane(_targetLaneIndex);
-            ThrowResult result = DetermineResult(monster);
+            ThrowResult result;
+            int defeatedCount = 0;
 
-            switch (result)
+            if (monsters.Count == 0)
             {
-                case ThrowResult.Hit:
-                    _monsterSystem.DefeatMonster(_targetLaneIndex);
-                    if (_explosionPrefab != null)
-                        Instantiate(_explosionPrefab, _targetPos, Quaternion.identity);
-                    break;
-                case ThrowResult.WrongRatio:
-                    _monsterSystem.TriggerWrongHitFeedback(_targetLaneIndex);
-                    break;
+                result = ThrowResult.EmptyLane;
+            }
+            else if (_capturedBakingState != BakingState.Cooked)
+            {
+                result = ThrowResult.WrongBake;
+            }
+            else
+            {
+                for (int i = 0; i < monsters.Count; i++)
+                {
+                    MonsterController monster = monsters[i];
+                    if (DetermineResult(monster) == ThrowResult.Hit)
+                    {
+                        Vector2 explosionPosition = monster.GetTargetPosition();
+                        _monsterSystem.DefeatMonster(monster);
+                        defeatedCount++;
+                        if (_explosionPrefab != null)
+                            Instantiate(_explosionPrefab, explosionPosition, Quaternion.identity);
+                    }
+                }
+
+                if (defeatedCount == 0)
+                {
+                    result = ThrowResult.WrongRatio;
+                    for (int i = 0; i < monsters.Count; i++)
+                        _monsterSystem.TriggerWrongHitFeedback(monsters[i]);
+                }
+                else
+                {
+                    result = defeatedCount == monsters.Count
+                        ? ThrowResult.Hit
+                        : ThrowResult.PartialHit;
+                }
             }
 
-            EventBus<OnThrowCompleted>.Publish(new OnThrowCompleted(_targetLaneIndex, result));
+            EventBus<OnThrowCompleted>.Publish(
+                new OnThrowCompleted(_targetLaneIndex, result, defeatedCount));
 
             if (_activeProjectile != null)
             {
@@ -133,10 +154,10 @@ namespace GWBGameJam
         private ThrowResult DetermineResult(MonsterController monster)
         {
             if (monster == null) return ThrowResult.EmptyLane;
-            if (_capturedBakingState != BakingState.Cooked) return ThrowResult.WrongRatio;
+            if (_capturedBakingState != BakingState.Cooked) return ThrowResult.WrongBake;
 
             float center = _boundaryConfig.GetCenterRatio(monster.Data.TargetDoughState);
-            if (center < 0f) return ThrowResult.WrongRatio; // TooSoft/TooHard/None have no valid center
+            if (center < 0f) return ThrowResult.WrongRatio;
 
             return Mathf.Abs(_capturedRatio - center) <= _boundaryConfig.ToleranceHalfWidth
                 ? ThrowResult.Hit

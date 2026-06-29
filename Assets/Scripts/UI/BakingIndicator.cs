@@ -39,9 +39,10 @@ namespace GWBGameJam
         {
             if (_hasConfigError) return;
             float t = _bakingSystem.GetBakingTimer();
+            float totalDuration = _bakingSystem.GetActiveTotalDuration();
             _fill.fillAmount = _currentState == BakingState.Idle
                 ? 0f
-                : Mathf.Clamp01(t / _bakingConfig.BurntForcedThrowDuration);
+                : Mathf.Clamp01(t / totalDuration);
         }
 
         private void HandleBakingStateChanged(OnBakingStateChanged e)

@@ -32,6 +32,8 @@ namespace GWBGameJam
     {
         EmptyLane,
         Hit,
-        WrongRatio
+        PartialHit,
+        WrongRatio,
+        WrongBake
     }
 }

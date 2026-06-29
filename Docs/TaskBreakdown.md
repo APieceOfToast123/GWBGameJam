@@ -1,5 +1,16 @@
 # Task Breakdown
 
+## Gameplay Revision Tasks（2026-06-29）
+
+1. GR-01：更新 Dough/Baking/Monster Config 与资产迁移
+2. GR-02：实现随机加粉和单次长按固定随机水速
+3. GR-03：实现分档烤制阈值和动态进度
+4. GR-04：MonsterSystem 改为单道容量 2 的集合
+5. GR-05：LevelSystem 按未满球道生成
+6. GR-06：ThrowSystem 实现最多双目标独立判定
+7. GR-07：更新面包名称、对勾与烤制进度 UI
+8. GR-08：补充 EditMode 测试、Unity 联调和 Review Checklist
+
 > 按依赖顺序排列。每个 Task 完成后执行 014_ReviewChecklist，然后更新 TASK_LOG.txt。
 > 粒度目标：每 Task 1~3 个脚本文件，可独立测试。
 
