@@ -4,12 +4,15 @@ namespace GWBGameJam
 {
     public class BakingSystem : MonoBehaviour
     {
+        private const int LaneCount = 5;
+
         [SerializeField] private BakingConfig _config;
         [SerializeField] private LaneManager _laneManager;
         [SerializeField] private DoughSystem _doughSystem;
 
         private float _bakingTimer;
         private BakingState _currentBakingState = BakingState.Idle;
+        private int _lockedLaneIndex = -1;
         private bool _isPlayingState;
         private bool _hasConfigError;
 
@@ -78,6 +81,7 @@ namespace GWBGameJam
         private void StartBaking()
         {
             _bakingTimer = 0f;
+            _lockedLaneIndex = ResolveThrowLaneIndex();
             BakingState prev = _currentBakingState;
             _currentBakingState = BakingState.Undercooked;
             EventBus<OnBakingStateChanged>.Publish(new OnBakingStateChanged(BakingState.Undercooked, prev));
@@ -104,19 +108,21 @@ namespace GWBGameJam
 
         private void TriggerThrow()
         {
-            int laneIndex = _laneManager.GetHoveredLaneIndex();
-            if (laneIndex < 0)
-            {
-                laneIndex = Random.Range(0, 5);
-                Debug.Log($"[BakingSystem] ForcedThrow → RandomLane[{laneIndex}]");
-            }
-
+            int laneIndex = _lockedLaneIndex >= 0 ? _lockedLaneIndex : ResolveThrowLaneIndex();
+            BakingState throwBakingState = _currentBakingState;
             BakingState prev = _currentBakingState;
             _bakingTimer = 0f;
+            _lockedLaneIndex = -1;
             _currentBakingState = BakingState.Idle;
 
-            EventBus<OnThrowRequested>.Publish(new OnThrowRequested(laneIndex));
+            EventBus<OnThrowRequested>.Publish(new OnThrowRequested(laneIndex, throwBakingState));
             EventBus<OnBakingStateChanged>.Publish(new OnBakingStateChanged(BakingState.Idle, prev));
+        }
+
+        private int ResolveThrowLaneIndex()
+        {
+            int laneIndex = _laneManager.GetHoveredLaneIndex();
+            return laneIndex >= 0 ? laneIndex : Random.Range(0, LaneCount);
         }
 
         private void HandleGameStateChanged(OnGameStateChanged e)
@@ -145,6 +151,7 @@ namespace GWBGameJam
         {
             BakingState prev = _currentBakingState;
             _bakingTimer = 0f;
+            _lockedLaneIndex = -1;
             _currentBakingState = BakingState.Idle;
             EventBus<OnBakingStateChanged>.Publish(new OnBakingStateChanged(BakingState.Idle, prev));
         }

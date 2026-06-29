@@ -15,6 +15,7 @@ namespace GWBGameJam
         [SerializeField] private GameObject _explosionPrefab;
 
         private float _capturedRatio;
+        private BakingState _capturedBakingState;
         private Vector2 _startPos;
         private Vector2 _targetPos;
         private int _targetLaneIndex;
@@ -80,6 +81,7 @@ namespace GWBGameJam
 
             _targetLaneIndex = e.LaneIndex;
             _capturedRatio = _doughSystem.GetCurrentRatio();
+            _capturedBakingState = e.BakingState;
             _startPos = _throwOrigin.position;
 
             // Target position: monster's predicted pos if present, else mid-lane waypoint
@@ -131,6 +133,7 @@ namespace GWBGameJam
         private ThrowResult DetermineResult(MonsterController monster)
         {
             if (monster == null) return ThrowResult.EmptyLane;
+            if (_capturedBakingState != BakingState.Cooked) return ThrowResult.WrongRatio;
 
             float center = _boundaryConfig.GetCenterRatio(monster.Data.TargetDoughState);
             if (center < 0f) return ThrowResult.WrongRatio; // TooSoft/TooHard/None have no valid center

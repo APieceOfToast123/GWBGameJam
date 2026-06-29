@@ -925,3 +925,30 @@ Architecture / CodingRules / TaskBreakdown / ManualInstructions / Code 已完全
 操作：将当前 main 工作区改动统一暂存并提交；尝试推送到当前跟踪远端 upstream/main，因 GitHub 权限被拒绝，随后改为推送到 origin/main；origin/main 非快进，已 fetch 并合并 origin/main，解决 Resources meta 与 Packages/manifest.json 冲突。
 状态：完成
 备注：提交包含代码审查修复与此前已完成的 MCP 本地配置隔离改动；upstream/main 拒绝 mianyoubiaoqing 写入权限；manifest 保留 CoplayDev MCP，Resources meta 保留 origin/main GUID。
+========================================
+[2026-06-29 接入 CoplayDev Unity MCP]
+指令：你用错指令了，请接入Unity MCP，而非MCP Unity
+操作：停止旧 com.gamelovers.mcp-unity Node 进程；确认 CoplayDev MCP for Unity 包已安装；启动 mcpforunityserver==9.7.3 HTTP server 到 http://127.0.0.1:8080/mcp；使用 MCP HTTP client 直连并成功列出 30 个 CoplayDev 工具；尝试调用只读 Unity 工具与打开 Unity MCP 面板。
+状态：阻塞
+备注：HTTP server 本体可用，但 Unity Editor 端 bridge 未连接，server 日志显示 No Unity plugin reconnected；Unity Editor 当前还出现 LevelSystem.cs 引用 LevelConfig.Levels 的编译错误，并卡在 Waiting for Unity's code to finish executing，需先恢复 Unity 编译/Editor 状态后再重新启动 Bridge 与 Codex。
+
+========================================
+[2026-06-29 再次接入 CoplayDev Unity MCP]
+指令：现在再试一次
+操作：确认 Unity 自行启动 mcpforunityserver==9.7.3 并监听 http://127.0.0.1:8080/mcp；server 日志显示 Plugin registered: GWBGameJam 且注册 30 个 Unity 工具；使用 MCP HTTP client 成功列出 43 个工具；只读调用 manage_editor telemetry_status、manage_scene get_active、manage_scene get_hierarchy 均成功返回。
+状态：完成
+备注：当前 Unity MCP 链路已接通；活动场景为 Assets/Scenes/MainMenu.unity，根对象包含 Main Camera、MainMenu_Canvas、EventSystem。
+
+========================================
+[2026-06-29 烤制与投掷功能影响分析]
+指令：请尝试完成协作文档中烤制与投掷的功能，编写测试用例并测试
+操作：读取 005_BakingSystem、006_ThrowSystem、010_ConfigSchema、012_Architecture、013_CodingRules、014_ReviewChecklist；扫描 BakingSystem、ThrowSystem、DoughSystem、LaneManager、MonsterSystem、相关事件与 Config；执行 dotnet build 验证当前基线可编译。
+状态：进行中
+备注：该请求属于 Gameplay 改动；会影响 005/006 Spec 与 OnThrowRequested 事件契约，需确认“按下空格瞬间锁定球道”和“仅 Cooked 熟度可造成伤害，Undercooked/Burnt 均无伤害”的实施口径后写代码。
+
+========================================
+[2026-06-29 烤制与投掷功能实现]
+指令：确认，请开始 / 继续你的任务
+操作：更新 005_BakingSystem 与 006_ThrowSystem 实施口径；扩展 OnThrowRequested 携带 BakingState；BakingSystem 在烤制开始时锁定投掷球道；ThrowSystem 捕获熟度并要求 Cooked + 正确比例才 Hit；新增 EditMode 测试程序集与 7 个测试用例；通过 Unity MCP 执行 EditMode 测试。
+状态：完成
+备注：dotnet build GWBGameJam.sln --no-restore 通过（仍有 MCP/Unity 既有 System.Net.Http 与 System.IO.Compression 版本冲突警告）；Unity MCP EditMode 测试 GWBGameJam.Tests.EditMode 通过 7/7；014 ReviewChecklist 已执行：禁止模式[✓]、EventBus 配对[✓]、Awake 验证[N/A 本次未新增]、命名空间/程序集[✓]、SO 规范[N/A]、数据所有权[✓]、Spec 符合性[✓]、Unity 最佳实践[✓]、日志调试[✓]、TASK_LOG 更新[✓]。

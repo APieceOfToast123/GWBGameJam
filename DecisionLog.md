@@ -342,3 +342,9 @@ Config：待移动阈值 0.5s（Balance 可调）。
 
 **[Tech] LaneManager 和 AspectRatioEnforcer 不再依赖 Camera.main**
 原因：相机引用应由 Inspector 注入，避免运行时隐式查找和 Tag 依赖；Game.unity 已显式绑定 Main Camera 的 Camera 组件。
+
+**[Gameplay] 烤制开始瞬间锁定投掷球道**
+原因：协作文档要求投掷方向由按下空格瞬间鼠标悬停的球道决定。BakingSystem 在 StartBaking 时捕获 hover lane；若无 hover，则当场随机一条并锁定，松开空格或强制投掷都使用同一条 lane。
+
+**[Gameplay] 未熟/烤焦面包沿用 WrongRatio 无伤害路径**
+原因：现有 ThrowResult 没有 WrongBake 枚举，用户确认仅 Cooked + 正确比例可造成伤害。为避免扩张 UI/事件契约，Undercooked 与 Burnt 命中有怪物时返回 WrongRatio，触发错误命中反馈但不删除怪物。

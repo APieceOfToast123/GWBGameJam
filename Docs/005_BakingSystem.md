@@ -244,3 +244,11 @@ BakingSystem 使用 `Time.deltaTime` 累加 timer，TimeScale 提升后 deltaTim
 - **连击机制（快速投掷加分）**：BakingSystem 可在 OnThrowRequested 中携带 BakingState 数据，上层系统根据 Cooked 状态给出加分，**BakingSystem 接口已支持（BakingState 可通过事件数据传递）**。
 - **多档位烤制（过熟→焦→炭化）**：当前只有3个计时阶段，增加阶段只需在 BakingConfig 中增加字段并在 Update 中增加判断，**结构支持，需小改**。
 - **按住空格期间面包缓慢上浮动画**：UISystem 读取 GetBakingTimer() 即可驱动，**BakingSystem 无需修改**。
+
+---
+
+## Implementation Update (2026-06-29)
+
+- Space press now locks the throw lane immediately. Releasing Space or reaching the forced-throw time uses this locked lane even if the mouse hover changes during baking.
+- If Space is pressed while no lane is hovered, the random lane is resolved and locked at baking start.
+- OnThrowRequested now carries the captured BakingState so ThrowSystem can reject undercooked or burnt bread without rereading BakingSystem state after it resets to Idle.

@@ -14,6 +14,12 @@ namespace GWBGameJam
     public readonly struct OnThrowRequested
     {
         public readonly int LaneIndex;
-        public OnThrowRequested(int laneIndex) { LaneIndex = laneIndex; }
+        public readonly BakingState BakingState;
+
+        public OnThrowRequested(int laneIndex, BakingState bakingState)
+        {
+            LaneIndex = laneIndex;
+            BakingState = bakingState;
+        }
     }
 }

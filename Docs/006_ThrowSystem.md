@@ -255,3 +255,11 @@ ThrowSystem 在 OnDestroy 中销毁 _activeProjectile，发布 OnThrowCompleted 
 - **投掷速度随距离变化**：当前 ThrowDuration 固定；若要近目标快、远目标慢，可改为 `ThrowDuration = distance / ThrowSpeed`，**Config 结构需小改**。
 - **多投射物同时飞行**：当前单投射物（DoughState.None 保护）；若要并发投掷，需将单个状态升级为投射物列表，**需中等改动**。
 - **投射物样式随烤制结果变化（不熟/熟/焦）**：ThrowSystem 在实例化时已知捕获时的 BakingState（可从事件扩展），Prefab 选择可按 BakingState 切换，**需小改**。
+
+---
+
+## Implementation Update (2026-06-29)
+
+- ThrowSystem captures BakingState from OnThrowRequested at throw start.
+- A lane with a monster only returns Hit when BakingState is Cooked and the captured ratio is within the monster target tolerance.
+- Undercooked or Burnt bread with a monster keeps the existing WrongRatio result path: no damage, wrong-hit feedback, monster remains.
