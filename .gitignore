@@ -116,3 +116,6 @@ ProjectSettings/PackageManagerSettings.asset
 .mcp/
 .codex/
 ProjectSettings/McpUnitySettings.json
+
+# Local dev log (not shared)
+TASK_LOG.txt
