@@ -1,5 +1,7 @@
 # 009 UISystem Spec
 
+> 2026-06-29 RatioBar Visual Revision：比例条使用唯一绿色竖线作为当前比例 Indicator；绿线左侧显示面粉纹理，右侧显示水纹理，两侧区域随 Indicator 移动动态改变宽度并限制在比例条范围内。三条原 `RefLine_*` 视觉对象改作 Softest / Medium / Hardest 三种面包制作成功区间。
+
 > 2026-06-29 Gameplay Revision：烤制进度条按本次锁定的分档 CookDuration 归一化；完成前、完美窗口、烤焦分别显示不同状态。比例进入有效容错区间时显示对应面包名称与对勾。场景和 Canvas 结构不变。
 
 | 字段 | 内容 |

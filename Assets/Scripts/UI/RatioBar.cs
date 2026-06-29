@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace GWBGameJam
 {
@@ -12,6 +13,10 @@ namespace GWBGameJam
         [Header("Visual Elements")]
         [SerializeField] private RectTransform _indicatorRect;
         [SerializeField] private GameObject _indicatorVisual;
+        [SerializeField] private RectTransform _flourTextureRect;
+        [SerializeField] private Image _flourTextureImage;
+        [SerializeField] private RectTransform _waterTextureRect;
+        [SerializeField] private Image _waterTextureImage;
         [SerializeField] private RectTransform _softestRefLine;
         [SerializeField] private RectTransform _mediumRefLine;
         [SerializeField] private RectTransform _hardestRefLine;
@@ -33,6 +38,13 @@ namespace GWBGameJam
             if (_doughConfig == null)    { Debug.LogError("[RatioBar] DoughConfig 未赋值");              _hasConfigError = true; }
             if (_boundaryConfig == null) { Debug.LogError("[RatioBar] DoughStateBoundaryConfig 未赋值"); _hasConfigError = true; }
             if (_indicatorRect == null)  { Debug.LogError("[RatioBar] IndicatorRect 未赋值");            _hasConfigError = true; }
+            if (_flourTextureRect == null)  { Debug.LogError("[RatioBar] FlourTextureRect is not assigned");  _hasConfigError = true; }
+            if (_flourTextureImage == null) { Debug.LogError("[RatioBar] FlourTextureImage is not assigned"); _hasConfigError = true; }
+            if (_waterTextureRect == null)  { Debug.LogError("[RatioBar] WaterTextureRect is not assigned");  _hasConfigError = true; }
+            if (_waterTextureImage == null) { Debug.LogError("[RatioBar] WaterTextureImage is not assigned"); _hasConfigError = true; }
+
+            if (!_hasConfigError)
+                ConfigureVisualOrder();
         }
 
         private void OnEnable()
@@ -58,14 +70,31 @@ namespace GWBGameJam
             }
 
             bool doughPresent = _doughSystem.GetCurrentDoughState() != DoughState.None;
-            if (_indicatorVisual != null)
-                _indicatorVisual.SetActive(doughPresent);
+            SetDoughVisualsActive(doughPresent);
 
             if (!doughPresent || _indicatorRect == null) return;
 
             _displayedRatio = Mathf.Lerp(_displayedRatio, _doughSystem.GetCurrentRatio(), _elasticSpeed * Time.deltaTime);
-            UpdateIndicatorPosition(_displayedRatio);
+            float indicatorX = UpdateIndicatorPosition(_displayedRatio);
+            UpdateTextureAreas(indicatorX);
             UpdateDoughStateFeedback();
+        }
+
+        private void ConfigureVisualOrder()
+        {
+            _flourTextureRect.SetAsFirstSibling();
+            _waterTextureRect.SetAsFirstSibling();
+            _indicatorRect.SetAsLastSibling();
+        }
+
+        private void SetDoughVisualsActive(bool isActive)
+        {
+            if (_indicatorVisual != null)
+                _indicatorVisual.SetActive(isActive);
+            if (_flourTextureImage != null)
+                _flourTextureImage.gameObject.SetActive(isActive);
+            if (_waterTextureImage != null)
+                _waterTextureImage.gameObject.SetActive(isActive);
         }
 
         private void UpdateDoughStateFeedback()
@@ -90,14 +119,29 @@ namespace GWBGameJam
                 };
         }
 
-        private void UpdateIndicatorPosition(float ratio)
+        private float UpdateIndicatorPosition(float ratio)
         {
             float barWidth = _barRect.rect.width;
             float normalized = 1f - Mathf.Clamp01(ratio / _doughConfig.MaxRatio);
-            _indicatorRect.anchoredPosition = new Vector2(
-                Mathf.Lerp(-barWidth * 0.5f, barWidth * 0.5f, normalized),
-                _indicatorRect.anchoredPosition.y
-            );
+            float x = Mathf.Lerp(-barWidth * 0.5f, barWidth * 0.5f, normalized);
+            _indicatorRect.anchoredPosition = new Vector2(x, _indicatorRect.anchoredPosition.y);
+            return x;
+        }
+
+        private void UpdateTextureAreas(float indicatorX)
+        {
+            float halfWidth = _barRect.rect.width * 0.5f;
+            SetTextureArea(_flourTextureRect, -halfWidth, indicatorX);
+            SetTextureArea(_waterTextureRect, indicatorX, halfWidth);
+        }
+
+        private static void SetTextureArea(RectTransform rect, float leftX, float rightX)
+        {
+            if (rect == null) return;
+
+            float width = Mathf.Max(0f, rightX - leftX);
+            rect.anchoredPosition = new Vector2((leftX + rightX) * 0.5f, rect.anchoredPosition.y);
+            rect.sizeDelta = new Vector2(width, rect.sizeDelta.y);
         }
 
         private void InitRefLines()
