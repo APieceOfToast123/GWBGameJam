@@ -119,3 +119,7 @@ ProjectSettings/McpUnitySettings.json
 
 # Local dev log (not shared)
 TASK_LOG.txt
+DecisionLog.md
+
+# Runtime debug logs
+Debug/
