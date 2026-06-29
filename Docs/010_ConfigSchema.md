@@ -1,5 +1,14 @@
 # 010 ConfigSchema Spec
 
+> 2026-06-29 DoughConfig Overhaul（覆盖旧 DoughConfig 字段）：比例条改为「滑块对位 UI」机制后，DoughConfig 字段重做为归一化移动参数：
+> - `FlourStep`(float, 默认 0.1, 0.01~1) — 每次左键加粉指示器右移的基础量（占整条 bar 比例）
+> - `FlourFactorMin`(float, 默认 0.5) / `FlourFactorMax`(float, 默认 2.0, ≥Min) — 每次左键随机倍率区间
+> - `WaterSpeed`(float, 默认 0.3, 0.01~2) — 右键长按指示器左移的基础速度（bar 比例/秒）
+> - `WaterFactorMin`(float, 默认 0.5) / `WaterFactorMax`(float, 默认 3.0, ≥Min) — 每次右键按下随机倍率区间（本次长按固定）
+> - `InitialPos`(float, 默认 0.5, 0~1) — 关卡开始 / 投掷后指示器重置的归一化位置
+> 旧字段 `FlourClickMin/Max`、`WaterFillRate`、`WaterSpeedMultiplierMin/Max`、`InitialRatio`、`MaxRatio` **移除**。
+> `DoughStateBoundaryConfig`（阈值/中心/容错）**作废**，不再参与运行时逻辑（类与 .asset 保留仅供旧测试编译，可后续删除）。命中判定改为 DoughState 枚举相等（见 006）。
+
 > 2026-06-29 Balance Revision：`DoughConfig.FlourClickMin = 0.3`、`DoughConfig.FlourClickMax = 2.0`、`DoughConfig.WaterSpeedMultiplierMin = 0.5`、`DoughConfig.WaterSpeedMultiplierMax = 3.0`。旧版固定 `FlourClickAmount` 与旧默认 `0.5~1.0 / 1.0~3.0` 描述由本修订覆盖。
 
 > 2026-06-29 Gameplay Revision（覆盖旧字段）：

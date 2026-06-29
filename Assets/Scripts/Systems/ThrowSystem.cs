@@ -12,12 +12,11 @@ namespace GWBGameJam
         [SerializeField] private MonsterSystem _monsterSystem;
         [SerializeField] private LaneManager _laneManager;
         [SerializeField] private MonsterConfig _monsterConfig;
-        [SerializeField] private DoughStateBoundaryConfig _boundaryConfig;
         [SerializeField] private Transform _throwOrigin;
         [SerializeField] private GameObject _projectilePrefab;
         [SerializeField] private GameObject _explosionPrefab;
 
-        private float _capturedRatio;
+        private DoughState _capturedDoughState;
         private BakingState _capturedBakingState;
         private Vector2 _startPos;
         private Vector2 _laneEntryPos;
@@ -39,7 +38,6 @@ namespace GWBGameJam
             if (_monsterSystem == null) { Debug.LogError("[ThrowSystem] MonsterSystem 未赋值"); _hasConfigError = true; }
             if (_laneManager == null) { Debug.LogError("[ThrowSystem] LaneManager 未赋值"); _hasConfigError = true; }
             if (_monsterConfig == null) { Debug.LogError("[ThrowSystem] MonsterConfig 未赋值"); _hasConfigError = true; }
-            if (_boundaryConfig == null) { Debug.LogError("[ThrowSystem] DoughStateBoundaryConfig 未赋值"); _hasConfigError = true; }
             if (_throwOrigin == null) { Debug.LogError("[ThrowSystem] ThrowOrigin Transform 未赋值"); _hasConfigError = true; }
             if (_projectilePrefab == null) { Debug.LogError("[ThrowSystem] ProjectilePrefab 未赋值"); _hasConfigError = true; }
             if (_explosionPrefab == null)
@@ -79,7 +77,7 @@ namespace GWBGameJam
             if (_hasConfigError || _inFlight) return;
 
             _targetLaneIndex = e.LaneIndex;
-            _capturedRatio = _doughSystem.GetCurrentRatio();
+            _capturedDoughState = _doughSystem.GetCurrentDoughState();
             _capturedBakingState = e.BakingState;
             _startPos = _throwOrigin.position;
 
@@ -179,10 +177,7 @@ namespace GWBGameJam
             if (monster == null) return ThrowResult.EmptyLane;
             if (_capturedBakingState != BakingState.Cooked) return ThrowResult.WrongBake;
 
-            float center = _boundaryConfig.GetCenterRatio(monster.Data.TargetDoughState);
-            if (center < 0f) return ThrowResult.WrongRatio;
-
-            return Mathf.Abs(_capturedRatio - center) <= _boundaryConfig.ToleranceHalfWidth
+            return _capturedDoughState == monster.Data.TargetDoughState
                 ? ThrowResult.Hit
                 : ThrowResult.WrongRatio;
         }

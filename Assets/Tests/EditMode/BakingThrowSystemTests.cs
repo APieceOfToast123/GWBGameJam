@@ -48,9 +48,9 @@ namespace GWBGameJam
             Assert.AreEqual(1.5f, bakingConfig.SoftestCookDuration);
             Assert.AreEqual(2f, bakingConfig.MediumCookDuration);
             Assert.AreEqual(3f, bakingConfig.HardestCookDuration);
-            Assert.AreEqual(0.5f, doughConfig.FlourClickMin);
-            Assert.AreEqual(1f, doughConfig.FlourClickMax);
-            Assert.AreEqual(3f, doughConfig.WaterSpeedMultiplierMax);
+            Assert.AreEqual(0.1f, doughConfig.FlourStep);
+            Assert.AreEqual(2f, doughConfig.FlourFactorMax);
+            Assert.AreEqual(3f, doughConfig.WaterFactorMax);
             Assert.AreEqual(2, monsterConfig.MaxMonstersPerLane);
         }
 

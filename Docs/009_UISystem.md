@@ -1,5 +1,7 @@
 # 009 UISystem Spec
 
+> 2026-06-29 RatioBar Zone-Selection Overhaul：比例条改为「滑块对位」机制。指示器位置由 DoughSystem 的归一化 `_pos` 驱动（DoughSystem 每帧设置指示器 anchoredPosition）。策划在比例条上**画 3 个绿色 UI Image 作为目标区域**，每个挂 `DoughZone` 组件（`[SerializeField] DoughState State`，仅 Softest/Medium/Hardest）。判定用 **RectTransform 重叠（非物理 Collider）**：指示器与哪个区域重叠最多就做哪种面包，都不重叠则失败。原 `RefLine_*`（按阈值自动定位的参考线）逻辑**移除**——由设计师手画的 DoughZone 取代。RatioBar 退为纯视觉：读 `GetCurrentDoughState()` 驱动面包名/对勾、读指示器位置定位面粉/水纹理、flipbook 输入反馈仍由 `IsInputActive()` 门控。
+
 > 2026-06-29 Ingredient Texture Animation Revision：RatioBar 的面粉区与水区分别使用 6 帧代码驱动 Sprite 翻页。常态 6 fps 循环；有效左键加粉时面粉区触发 0.2 秒快速翻页与 1.1 倍脉冲；有效右键按下时水区触发同样脉冲，持续按住期间以 3 倍速度翻页，松开恢复常速。动画触发复用 DoughSystem 的输入有效性门控，暂停、烤制及 DoughState=None 时不响应；所有计时使用 Time.deltaTime。
 
 > 2026-06-29 RatioBar Visual Revision：比例条使用唯一绿色竖线作为当前比例 Indicator；绿线左侧显示面粉纹理，右侧显示水纹理，两侧区域随 Indicator 移动动态改变宽度并限制在比例条范围内。三条原 `RefLine_*` 视觉对象改作 Softest / Medium / Hardest 三种面包制作成功区间。
