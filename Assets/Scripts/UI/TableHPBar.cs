@@ -6,21 +6,19 @@ namespace GWBGameJam
     public class TableHPBar : MonoBehaviour
     {
         [SerializeField] private TableSystem _tableSystem;
-        [SerializeField] private Image _fill;
+        [SerializeField] private Image[] _hearts;
+        [SerializeField] private Sprite _fullSprite;
+        [SerializeField] private Sprite _emptySprite;
 
-        [Header("HP Color Thresholds")]
-        [SerializeField] private Color _highHPColor = Color.green;
-        [SerializeField] private Color _midHPColor  = Color.yellow;
-        [SerializeField] private Color _lowHPColor  = Color.red;
-        [SerializeField, Range(0f, 1f)] private float _midThreshold = 0.5f;
-        [SerializeField, Range(0f, 1f)] private float _lowThreshold = 0.25f;
-
+        private int _displayHP;
         private bool _hasConfigError;
 
         private void Awake()
         {
-            if (_tableSystem == null) { Debug.LogError("[TableHPBar] TableSystem 未赋值"); _hasConfigError = true; }
-            if (_fill == null)        { Debug.LogError("[TableHPBar] Fill Image 未赋值");  _hasConfigError = true; }
+            if (_tableSystem == null)                  { Debug.LogError("[TableHPBar] TableSystem 未赋值"); _hasConfigError = true; }
+            if (_hearts == null || _hearts.Length == 0) { Debug.LogError("[TableHPBar] Hearts 未配置");      _hasConfigError = true; }
+            if (_fullSprite == null)                   { Debug.LogError("[TableHPBar] FullSprite 未赋值");  _hasConfigError = true; }
+            if (_emptySprite == null)                  { Debug.LogError("[TableHPBar] EmptySprite 未赋值"); _hasConfigError = true; }
         }
 
         private void OnEnable()
@@ -35,20 +33,28 @@ namespace GWBGameJam
             EventBus<OnLevelStarted>.Unsubscribe(HandleLevelStarted);
         }
 
-        private void UpdateDisplay()
+        // 自维护血量镜像，不依赖 TableSystem 与本组件的事件回调顺序
+        private void HandleLevelStarted(OnLevelStarted e)
         {
             if (_hasConfigError) return;
-            int maxHP = _tableSystem.GetMaxHP();
-            if (maxHP <= 0) return;
-
-            float ratio = (float)_tableSystem.GetCurrentHP() / maxHP;
-            _fill.fillAmount = ratio;
-            _fill.color = ratio <= _lowThreshold ? _lowHPColor
-                        : ratio <= _midThreshold  ? _midHPColor
-                        : _highHPColor;
+            _displayHP = _tableSystem.GetMaxHP();
+            UpdateDisplay();
         }
 
-        private void HandleMonsterReachedTable(OnMonsterReachedTable e) => UpdateDisplay();
-        private void HandleLevelStarted(OnLevelStarted e) => UpdateDisplay();
+        private void HandleMonsterReachedTable(OnMonsterReachedTable e)
+        {
+            if (_hasConfigError) return;
+            _displayHP = Mathf.Max(0, _displayHP - 1);
+            UpdateDisplay();
+        }
+
+        private void UpdateDisplay()
+        {
+            for (int i = 0; i < _hearts.Length; i++)
+            {
+                if (_hearts[i] == null) continue;
+                _hearts[i].sprite = i < _displayHP ? _fullSprite : _emptySprite;
+            }
+        }
     }
 }

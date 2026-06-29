@@ -118,12 +118,17 @@ _UI/
 - 进度值：每帧读取 `BakingSystem.GetBakingTimer()`
 - 投掷后（BakingState 回到 Idle）：进度条归零，颜色回灰
 
-### TableHPBar（桌子 HP 条）
+### TableHPBar（桌子 HP，心形图标）
 
-- 显示剩余 HP 格数：`fillAmount = TableSystem.GetCurrentHP() / TableSystem.GetMaxHP()`
-- 颜色建议：HP > 50% 绿色，≤ 50% 黄色，≤ 25% 红色（策划 Inspector 配置阈值）
-- 订阅 OnMonsterReachedTable → 立即更新（不等待 OnTableDestroyed）
-- 订阅 OnLevelStarted → 重置至满格
+> 2026-06-29 改为心形图标（满血图 / 空血图），取代旧的单条 fillAmount + 颜色阈值。
+
+- N 个心形 Image 并排（N = TableConfig.MaxHits，默认 3），策划手摆并拖入 `_hearts[]`。
+- 两张图：`_fullSprite`（满血）、`_emptySprite`（空血）。
+- 第 i 个心：`i < 当前血量 ? 满血图 : 空血图`。
+- 维护本地血量镜像 `_displayHP`，**不依赖 TableSystem 的事件回调顺序**：
+  - 订阅 OnLevelStarted → `_displayHP = GetMaxHP()`（重置满血）
+  - 订阅 OnMonsterReachedTable → `_displayHP -= 1`（夹到 0）
+- 组件：`Assets/Scripts/UI/TableHPBar.cs`。`_hearts` 数量应等于 MaxHits。
 
 ### DoughVisual（揉面面团，菜板上）
 
