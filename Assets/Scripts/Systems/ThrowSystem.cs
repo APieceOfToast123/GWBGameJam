@@ -131,6 +131,19 @@ namespace GWBGameJam
             IReadOnlyList<MonsterController> monsters =
                 _monsterSystem.GetMonstersInLane(_targetLaneIndex);
 
+            // ╔══════ DEBUG：命中诊断 ══════╗
+#pragma warning disable 162
+            const bool DebugHit = true;
+            if (DebugHit)
+            {
+                string targets = "";
+                for (int i = 0; i < monsters.Count; i++)
+                    targets += (monsters[i] != null ? monsters[i].Data.TargetDoughState.ToString() : "null") + " ";
+                Debug.Log($"[Throw] lane={_targetLaneIndex} 捕获档位={_capturedDoughState} 熟度={_capturedBakingState} 怪物数={monsters.Count} 怪物目标=[{targets}]");
+            }
+#pragma warning restore 162
+            // ╚════════════════════════════╝
+
             ThrowResult result;
             int defeatedCount = 0;
 
