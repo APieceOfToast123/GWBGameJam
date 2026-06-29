@@ -1,5 +1,16 @@
 # 004 DoughSystem Spec
 
+> 2026-06-29 Mechanic Overhaul（重大改动，覆盖以下大量旧内容）：做面包的档位**不再由数值水粉比 + 阈值决定，改为完全靠 UI 区域重叠**。
+> - DoughSystem 被 repurpose：拥有一个**归一化位置** `_pos`∈[0,1]，左键加粉使指示器**右移**（`_pos += FlourStep × Random(FlourFactorMin, FlourFactorMax)`，离散），右键加水使指示器**左移**（每秒 `WaterSpeed × Random(WaterFactorMin, WaterFactorMax)`，factor 按下时抽一次本次长按固定，连续）。`_pos` 夹在 [0,1]。
+> - DoughSystem 持有指示器 RectTransform + 3 个 `DoughZone` 引用，每帧把指示器移到 `_pos` 对应 X，并计算**指示器 rect 与各 DoughZone rect 的重叠面积**：取重叠最大的 zone → 其 `DoughState`（仅 Softest/Medium/Hardest）；无任何重叠 → 失败档位（`_pos ≤ 0.5` 记 TooSoft，否则 TooHard，均不可命中）。投掷飞行期间 = None。
+> - 命中判定改为**枚举相等**（见 006）：捕获的 DoughState == 怪物 TargetDoughState 才命中。
+> - `DoughStateBoundaryConfig`（阈值/中心/容错）**作废，不再参与逻辑**（类保留仅供旧测试编译）。
+> - DoughConfig 字段重做（见 010）：`FlourStep / FlourFactorMin / FlourFactorMax / WaterSpeed / WaterFactorMin / WaterFactorMax / InitialPos`，全部归一化、可在 Inspector 调。
+> - 对外 API 保持：`GetCurrentDoughState()` / `IsInputActive()` 不变，故 BakingSystem / DoughVisual 等无需改动。
+> - 输入门控不变：仅 Playing + BakingState==Idle + 非投掷飞行期间有效。
+> 本横幅以下的旧版「ratio÷阈值÷容错」描述均已被本次改动取代。
+
+
 > 2026-06-29 Balance Revision：左键每次点击独立抽取 `FlourClickMin~FlourClickMax = 0.3~2.0` 格；右键每次按下独立抽取 `WaterSpeedMultiplierMin~WaterSpeedMultiplierMax = 0.5~3.0`，本次长按期间固定，松开后下次重新抽取。旧版 `FlourClickAmount` 与旧默认 `0.5~1.0 / 1.0~3.0` 描述由本修订覆盖。
 
 > 2026-06-29 Gameplay Revision：左键每次点击从 `FlourClickMin~FlourClickMax` 随机加粉；右键每次按下从 `WaterSpeedMultiplierMin~WaterSpeedMultiplierMax` 抽取倍率，本次长按期间固定，松开后清除。本文旧版固定 FlourClickAmount、固定 WaterFillRate 速度描述由本修订覆盖。

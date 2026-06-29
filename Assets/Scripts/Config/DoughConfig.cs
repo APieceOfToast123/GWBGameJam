@@ -1,45 +1,37 @@
 using UnityEngine;
-using UnityEngine.Serialization;
 
 namespace GWBGameJam
 {
     [CreateAssetMenu(fileName = "DoughConfig", menuName = "GWBGameJam/Configs/DoughConfig")]
     public class DoughConfig : ScriptableObject
     {
-        [SerializeField, Min(0.1f), FormerlySerializedAs("_flourClickAmount")]
-        private float _flourClickMin = 0.3f;
-        [SerializeField, Min(0.1f)]
-        private float _flourClickMax = 2f;
-        [SerializeField, Min(0.1f), FormerlySerializedAs("WaterFillRate")]
-        private float _waterFillRate = 0.5f;
-        [SerializeField, Min(0.1f)]
-        private float _waterSpeedMultiplierMin = 0.5f;
-        [SerializeField, Min(0.1f)]
-        private float _waterSpeedMultiplierMax = 3f;
-        [SerializeField, Min(0f), FormerlySerializedAs("InitialRatio")]
-        private float _initialRatio = 1f;
-        [SerializeField, Min(0.1f), FormerlySerializedAs("MaxRatio")]
-        private float _maxRatio = 3f;
+        [SerializeField, Range(0.01f, 1f)] private float _flourStep = 0.1f;
+        [SerializeField, Min(0.01f)] private float _flourFactorMin = 0.5f;
+        [SerializeField, Min(0.01f)] private float _flourFactorMax = 2f;
+        [SerializeField, Range(0.01f, 2f)] private float _waterSpeed = 0.3f;
+        [SerializeField, Min(0.01f)] private float _waterFactorMin = 0.5f;
+        [SerializeField, Min(0.01f)] private float _waterFactorMax = 3f;
+        [SerializeField, Range(0f, 1f)] private float _initialPos = 0.5f;
 
-        public float FlourClickMin => _flourClickMin;
-        public float FlourClickMax => _flourClickMax;
-        public float WaterFillRate => _waterFillRate;
-        public float WaterSpeedMultiplierMin => _waterSpeedMultiplierMin;
-        public float WaterSpeedMultiplierMax => _waterSpeedMultiplierMax;
-        public float InitialRatio => _initialRatio;
-        public float MaxRatio => _maxRatio;
+        public float FlourStep => _flourStep;
+        public float FlourFactorMin => _flourFactorMin;
+        public float FlourFactorMax => _flourFactorMax;
+        public float WaterSpeed => _waterSpeed;
+        public float WaterFactorMin => _waterFactorMin;
+        public float WaterFactorMax => _waterFactorMax;
+        public float InitialPos => _initialPos;
 
         public void Validate()
         {
-            if (_flourClickMax < _flourClickMin)
+            if (_flourFactorMax < _flourFactorMin)
             {
-                Debug.LogError("[DoughConfig] FlourClickMax 不能小于 FlourClickMin，已自动修正");
-                _flourClickMax = _flourClickMin;
+                Debug.LogError("[DoughConfig] FlourFactorMax 不能小于 FlourFactorMin，已自动修正");
+                _flourFactorMax = _flourFactorMin;
             }
-            if (_waterSpeedMultiplierMax < _waterSpeedMultiplierMin)
+            if (_waterFactorMax < _waterFactorMin)
             {
-                Debug.LogError("[DoughConfig] WaterSpeedMultiplierMax 不能小于 WaterSpeedMultiplierMin，已自动修正");
-                _waterSpeedMultiplierMax = _waterSpeedMultiplierMin;
+                Debug.LogError("[DoughConfig] WaterFactorMax 不能小于 WaterFactorMin，已自动修正");
+                _waterFactorMax = _waterFactorMin;
             }
         }
     }

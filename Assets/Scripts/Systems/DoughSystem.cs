@@ -5,43 +5,41 @@ namespace GWBGameJam
     public class DoughSystem : MonoBehaviour
     {
         [SerializeField] private DoughConfig _config;
-        [SerializeField] private DoughStateBoundaryConfig _boundaryConfig;
+        [SerializeField] private RectTransform _barRect;
+        [SerializeField] private RectTransform _indicatorRect;
+        [SerializeField] private DoughZone[] _zones;
 
-        private float _currentRatio;
+        private float _pos;
         private DoughState _currentDoughState = DoughState.None;
         private bool _isPlayingState;
         private bool _isBakingIdle = true;
+        private bool _inFlight;
         private bool _hasConfigError;
-        private float _activeWaterSpeedMultiplier = 1f;
+        private float _activeWaterFactor = 1f;
 
-        public float GetCurrentRatio() => _currentRatio;
-        public DoughState GetCurrentDoughState() => _currentDoughState;
-        public bool IsInputActive() => CanProcessInput;
+        private readonly Vector3[] _cornersA = new Vector3[4];
+        private readonly Vector3[] _cornersB = new Vector3[4];
 
         private bool CanProcessInput =>
-            !_hasConfigError &&
-            _isPlayingState &&
-            _isBakingIdle &&
-            _currentDoughState != DoughState.None;
+            !_hasConfigError && _isPlayingState && _isBakingIdle && !_inFlight;
+
+        public DoughState GetCurrentDoughState() => _currentDoughState;
+        public bool IsInputActive() => CanProcessInput;
+        public float GetNormalizedPos() => _pos;
 
         private void Awake()
         {
             ValidateConfig();
+            _pos = _hasConfigError ? 0.5f : _config.InitialPos;
         }
 
         private void ValidateConfig()
         {
-            if (_config == null)
-            {
-                Debug.LogError("[DoughSystem] DoughConfig 未赋值");
-                _hasConfigError = true;
-            }
-            if (_boundaryConfig == null)
-            {
-                Debug.LogError("[DoughSystem] DoughStateBoundaryConfig 未赋值");
-                _hasConfigError = true;
-            }
-            if (_config != null)
+            if (_config == null)        { Debug.LogError("[DoughSystem] DoughConfig 未赋值");   _hasConfigError = true; }
+            if (_barRect == null)       { Debug.LogError("[DoughSystem] BarRect 未赋值");        _hasConfigError = true; }
+            if (_indicatorRect == null) { Debug.LogError("[DoughSystem] IndicatorRect 未赋值");  _hasConfigError = true; }
+            if (_zones == null || _zones.Length == 0) { Debug.LogError("[DoughSystem] Zones 未配置"); _hasConfigError = true; }
+            if (!_hasConfigError)
                 _config.Validate();
         }
 
@@ -65,41 +63,34 @@ namespace GWBGameJam
 
         private void Update()
         {
-            if (Input.GetMouseButtonUp(1))
-                _activeWaterSpeedMultiplier = 1f;
-
             if (!CanProcessInput) return;
 
+            // 左键加粉 → 指示器右移（_pos 增大），每次乘随机倍率
             if (Input.GetMouseButtonDown(0))
-                ApplyFlour();
+                _pos = Mathf.Clamp01(_pos + _config.FlourStep * Random.Range(_config.FlourFactorMin, _config.FlourFactorMax));
 
+            // 右键按下时抽一次倍率，本次长按固定
             if (Input.GetMouseButtonDown(1))
-                _activeWaterSpeedMultiplier = Random.Range(
-                    _config.WaterSpeedMultiplierMin,
-                    _config.WaterSpeedMultiplierMax);
+                _activeWaterFactor = Random.Range(_config.WaterFactorMin, _config.WaterFactorMax);
 
+            // 右键加水 → 指示器左移（_pos 减小），连续
             if (Input.GetMouseButton(1))
-                ApplyWater();
+                _pos = Mathf.Clamp01(_pos - _config.WaterSpeed * _activeWaterFactor * Time.deltaTime);
 
-        }
-
-        private void ApplyFlour()
-        {
-            float amount = Random.Range(_config.FlourClickMin, _config.FlourClickMax);
-            _currentRatio = Mathf.Clamp(_currentRatio - amount, 0f, _config.MaxRatio);
+            MoveIndicator();
             DeriveAndPublishState();
         }
 
-        private void ApplyWater()
+        private void MoveIndicator()
         {
-            float amount = _config.WaterFillRate * _activeWaterSpeedMultiplier * Time.deltaTime;
-            _currentRatio = Mathf.Clamp(_currentRatio + amount, 0f, _config.MaxRatio);
-            DeriveAndPublishState();
+            float halfWidth = _barRect.rect.width * 0.5f;
+            float x = Mathf.Lerp(-halfWidth, halfWidth, _pos);
+            _indicatorRect.anchoredPosition = new Vector2(x, _indicatorRect.anchoredPosition.y);
         }
 
         private void DeriveAndPublishState()
         {
-            DoughState newState = _boundaryConfig.GetDoughState(_currentRatio);
+            DoughState newState = ResolveOverlapState();
             if (newState == _currentDoughState) return;
 
             DoughState prev = _currentDoughState;
@@ -107,37 +98,59 @@ namespace GWBGameJam
             EventBus<OnDoughStateChanged>.Publish(new OnDoughStateChanged(newState, prev));
         }
 
+        // 取指示器与各 DoughZone 水平重叠面积最大的那个；无重叠则按位置记失败档位
+        private DoughState ResolveOverlapState()
+        {
+            _indicatorRect.GetWorldCorners(_cornersA);
+            float aMin = _cornersA[0].x, aMax = _cornersA[2].x;
+
+            float bestOverlap = 0f;
+            DoughState bestState = DoughState.None;
+            for (int i = 0; i < _zones.Length; i++)
+            {
+                if (_zones[i] == null) continue;
+                _zones[i].Rect.GetWorldCorners(_cornersB);
+                float bMin = _cornersB[0].x, bMax = _cornersB[2].x;
+                float overlap = Mathf.Min(aMax, bMax) - Mathf.Max(aMin, bMin);
+                if (overlap > bestOverlap)
+                {
+                    bestOverlap = overlap;
+                    bestState = _zones[i].State;
+                }
+            }
+
+            if (bestOverlap > 0f)
+                return bestState;
+            return _pos <= 0.5f ? DoughState.TooSoft : DoughState.TooHard;
+        }
+
         private void ResetToInitial()
         {
             if (_hasConfigError) return;
-            _currentRatio = _config.InitialRatio;
-            DoughState newState = _boundaryConfig.GetDoughState(_currentRatio);
-            DoughState prev = _currentDoughState;
-            _currentDoughState = newState;
-            if (newState != prev)
-                EventBus<OnDoughStateChanged>.Publish(new OnDoughStateChanged(newState, prev));
+            _pos = _config.InitialPos;
+            MoveIndicator();
+            DeriveAndPublishState();
         }
 
-        private void HandleGameStateChanged(OnGameStateChanged e)
-        {
-            _isPlayingState = e.NewState == GameState.Playing;
-        }
+        private void HandleGameStateChanged(OnGameStateChanged e) => _isPlayingState = e.NewState == GameState.Playing;
 
-        private void HandleBakingStateChanged(OnBakingStateChanged e)
-        {
-            _isBakingIdle = e.NewState == BakingState.Idle;
-        }
+        private void HandleBakingStateChanged(OnBakingStateChanged e) => _isBakingIdle = e.NewState == BakingState.Idle;
 
         private void HandleLevelStarted(OnLevelStarted e) => ResetToInitial();
 
         private void HandleThrowStarted(OnThrowStarted e)
         {
+            _inFlight = true;
             DoughState prev = _currentDoughState;
             _currentDoughState = DoughState.None;
             if (prev != DoughState.None)
                 EventBus<OnDoughStateChanged>.Publish(new OnDoughStateChanged(DoughState.None, prev));
         }
 
-        private void HandleThrowCompleted(OnThrowCompleted e) => ResetToInitial();
+        private void HandleThrowCompleted(OnThrowCompleted e)
+        {
+            _inFlight = false;
+            ResetToInitial();
+        }
     }
 }

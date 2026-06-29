@@ -1,5 +1,7 @@
 # 006 ThrowSystem Spec
 
+> 2026-06-29 Hit-Detection Overhaul：命中判定从「比例距离（|capturedRatio − 档位中心| ≤ 容错）」改为**枚举相等**。投掷时捕获 `DoughSystem.GetCurrentDoughState()`（不再捕获 ratio）；`DetermineResult(monster)` = `capturedDoughState == monster.Data.TargetDoughState`（且仍要求 `_capturedBakingState == Cooked`）即 Hit，否则 WrongRatio。`DoughStateBoundaryConfig` 与 `_capturedRatio` 字段移除。其余（多怪快照、PartialHit、WrongBake、抛物线路径）不变。
+
 > 2026-06-29 Gameplay Revision：面包到达时读取目标球道当前怪物快照，最多处理 `MaxMonstersPerLane` 只。Cooked 面包分别对每只怪物执行比例判定并击杀所有匹配者；未匹配者保留。新增 PartialHit 与 WrongBake 结果。投射物视觉路径改为先进入目标球道底部，再沿球道中心线向前飞行。本文旧版单目标命中描述由本修订覆盖。
 
 ### Revision Acceptance Criteria
