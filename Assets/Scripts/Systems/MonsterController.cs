@@ -26,6 +26,7 @@ namespace GWBGameJam
         private bool _wrongHitShowingHit;
         private bool _hasVisualError;
         private bool _hasSpriteRendererError;
+        private bool _isTerminated;
 
         // _config may be null before Initialize; guard before reading
         public bool IsPendingMove => _config != null && !_isMoving && _moveTimer <= _config.PendingMoveThreshold;
@@ -124,12 +125,18 @@ namespace GWBGameJam
 
         private void ReachedTable()
         {
+            if (_isTerminated) return;
+
+            _isTerminated = true;
             EventBus<OnMonsterReachedTable>.Publish(new OnMonsterReachedTable(LaneIndex));
             Destroy(gameObject);
         }
 
         public void Defeat()
         {
+            if (_isTerminated) return;
+
+            _isTerminated = true;
             EventBus<OnMonsterDefeated>.Publish(new OnMonsterDefeated(LaneIndex));
             Destroy(gameObject);
         }
