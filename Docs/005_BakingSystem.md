@@ -249,6 +249,6 @@ BakingSystem 使用 `Time.deltaTime` 累加 timer，TimeScale 提升后 deltaTim
 
 ## Implementation Update (2026-06-29)
 
-- Space press now locks the throw lane immediately. Releasing Space or reaching the forced-throw time uses this locked lane even if the mouse hover changes during baking.
-- If Space is pressed while no lane is hovered, the random lane is resolved and locked at baking start.
+- While BakingState is not Idle, LaneSystem hover remains active so the player can choose or change the target lane with the mouse during baking.
+- Releasing Space or reaching the forced-throw time resolves the throw lane from the current hover at that moment. If no lane is hovered then, BakingSystem randomly selects one lane from 0 to 4.
 - OnThrowRequested now carries the captured BakingState so ThrowSystem can reject undercooked or burnt bread without rereading BakingSystem state after it resets to Idle.

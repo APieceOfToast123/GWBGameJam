@@ -39,7 +39,7 @@ namespace GWBGameJam
         }
 
         [Test]
-        public void BakingSystemThrowsToLaneLockedAtBakeStart()
+        public void BakingSystemThrowsToCurrentHoveredLaneAtThrowTime()
         {
             var laneManager = CreateComponent<LaneManager>("LaneManager");
             var bakingSystem = CreateComponent<BakingSystem>("BakingSystem");
@@ -69,7 +69,7 @@ namespace GWBGameJam
             }
 
             Assert.IsTrue(received);
-            Assert.AreEqual(2, capturedRequest.LaneIndex);
+            Assert.AreEqual(4, capturedRequest.LaneIndex);
             Assert.AreEqual(BakingState.Cooked, capturedRequest.BakingState);
         }
 

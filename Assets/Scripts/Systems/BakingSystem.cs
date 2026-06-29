@@ -12,7 +12,6 @@ namespace GWBGameJam
 
         private float _bakingTimer;
         private BakingState _currentBakingState = BakingState.Idle;
-        private int _lockedLaneIndex = -1;
         private bool _isPlayingState;
         private bool _hasConfigError;
 
@@ -81,7 +80,6 @@ namespace GWBGameJam
         private void StartBaking()
         {
             _bakingTimer = 0f;
-            _lockedLaneIndex = ResolveThrowLaneIndex();
             BakingState prev = _currentBakingState;
             _currentBakingState = BakingState.Undercooked;
             EventBus<OnBakingStateChanged>.Publish(new OnBakingStateChanged(BakingState.Undercooked, prev));
@@ -108,11 +106,10 @@ namespace GWBGameJam
 
         private void TriggerThrow()
         {
-            int laneIndex = _lockedLaneIndex >= 0 ? _lockedLaneIndex : ResolveThrowLaneIndex();
+            int laneIndex = ResolveThrowLaneIndex();
             BakingState throwBakingState = _currentBakingState;
             BakingState prev = _currentBakingState;
             _bakingTimer = 0f;
-            _lockedLaneIndex = -1;
             _currentBakingState = BakingState.Idle;
 
             EventBus<OnThrowRequested>.Publish(new OnThrowRequested(laneIndex, throwBakingState));
@@ -151,7 +148,6 @@ namespace GWBGameJam
         {
             BakingState prev = _currentBakingState;
             _bakingTimer = 0f;
-            _lockedLaneIndex = -1;
             _currentBakingState = BakingState.Idle;
             EventBus<OnBakingStateChanged>.Publish(new OnBakingStateChanged(BakingState.Idle, prev));
         }
