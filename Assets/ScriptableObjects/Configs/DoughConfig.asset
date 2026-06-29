@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: DoughConfig
   m_EditorClassIdentifier: 
   _flourStep: 0.1
-  _flourFactorMin: 0.5
-  _flourFactorMax: 1.5
+  _flourFactorMin: 0.3
+  _flourFactorMax: 2
   _waterSpeed: 0.3
   _waterFactorMin: 0.5
-  _waterFactorMax: 2
+  _waterFactorMax: 3
   _initialPos: 0.5

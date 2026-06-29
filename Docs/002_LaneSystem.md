@@ -1,6 +1,8 @@
 # 002 LaneSystem Spec
 
-> 2026-06-29 Lane Highlight Art Revision：Game 场景的 5 条 Lane 使用 `Assets/image/background/微信图片_20260629233029_614_25.png` 至 `...618_25.png` 作为 HoveredSprite。NormalSprite 保持为空，平时由主背景图显示普通轨道；仅在按住空格进入烤制阶段时，鼠标所在轨道显示对应高亮图。
+> 2026-06-30 Lane Highlight Art Revision：Game 场景的 5 条 Lane 使用 `Assets/image/background/微信图片_20260629233029_614_25.png` 至 `...618_25.png` 作为 HoveredSprite。实际显示层放在 `BG_Canvas` 下的 `LaneHighlight_0~4` UI Image，NormalSprite 保持为空，平时由主背景图显示普通轨道；仅在按住空格进入烤制阶段时，鼠标所在轨道显示对应高亮图。
+
+> 2026-06-30 Lane Highlight Calibration：`LaneHighlight_2` 保持 0 度作为中心基准；`LaneHighlight_0/4` 分别向画面中心旋转约 10 度，`LaneHighlight_1/3` 分别向外旋转约 7 度。四条非中心轨道的覆盖图尺寸略放大，优先保证高亮图覆盖整条背景轨道。
 
 | 字段 | 内容 |
 |------|------|
@@ -135,11 +137,14 @@ _World/Lanes/
 
 **Visual / Collider 分离原因：**
 悬停缩放只作用于 `Visual` 子节点，`Collider` 节点保持原始形状不变，避免缩放导致碰撞判定边界偏移。
+若普通球道已合入背景图，实际高亮可由 `BG_Canvas` 下的 `UiVisual` / `UiImage` 覆盖层显示，Collider 判定仍由 Lane 节点负责。
 
 **每个 Lane 包含的 Sprite 引用：**
 
 | 字段 | 类型 | 说明 |
 |------|------|------|
+| UiVisual | RectTransform | 可选，Canvas 高亮覆盖层节点 |
+| UiImage | Image | 可选，Canvas 高亮覆盖层图片 |
 | NormalSprite | Sprite | 默认显示的球道图片 |
 | HoveredSprite | Sprite | 鼠标悬停时替换的高亮图片 |
 
@@ -210,7 +215,7 @@ _World/Lanes/
 ## Acceptance Criteria
 
 - [ ] Given PLAYING 且 BakingState = Idle（未烤制），When 鼠标移入 Lane_2，Then 无任何视觉变化（球道不高亮）
-- [ ] Given PLAYING 且 BakingState = Cooked（烤制中），When 鼠标移入 Lane_2，Then Lane_2 显示 HoveredSprite，Visual 节点 Scale = HoverScaleMultiplier，其余4条球道保持 NormalSprite
+- [ ] Given PLAYING 且 BakingState = Cooked（烤制中），When 鼠标移入 Lane_2，Then Lane_2 显示 HoveredSprite，Visual/UiVisual 节点 Scale = HoverScaleMultiplier，其余4条球道保持 NormalSprite 或隐藏状态
 - [ ] Given Lane_2 处于 Hovered，When 鼠标移入 Lane_3，Then Lane_2 恢复 Normal，Lane_3 变为 Hovered，广播 OnLaneHoverChanged(3)
 - [ ] Given 鼠标在任意球道上，When 按 Esc 暂停，Then 所有球道立即恢复 Normal，广播 OnLaneHoverChanged(-1)
 - [ ] Given PAUSED，When 鼠标移过球道，Then 无任何视觉变化

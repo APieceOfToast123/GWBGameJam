@@ -2,7 +2,9 @@
 
 > 2026-06-29 RatioBar Zone-Selection Overhaul：比例条改为「滑块对位」机制。指示器位置由 DoughSystem 的归一化 `_pos` 驱动（DoughSystem 每帧设置指示器 anchoredPosition）。策划在比例条上**画 3 个绿色 UI Image 作为目标区域**，每个挂 `DoughZone` 组件（`[SerializeField] DoughState State`，仅 Softest/Medium/Hardest）。判定用 **RectTransform 重叠（非物理 Collider）**：指示器与哪个区域重叠最多就做哪种面包，都不重叠则失败。原 `RefLine_*`（按阈值自动定位的参考线）逻辑**移除**——由设计师手画的 DoughZone 取代。RatioBar 退为纯视觉：读 `GetCurrentDoughState()` 驱动面包名/对勾、读指示器位置定位面粉/水纹理、flipbook 输入反馈仍由 `IsInputActive()` 门控。
 
-> 2026-06-29 后续：翻页动画（SpriteFlipbook）已从 RatioBar 移除（用户只要纹理、不要翻页）。面粉/水纹理改为等长固定块、随指针移动（_textureLength 控制长度）。下面这条 Flipbook 修订作废。
+> 2026-06-30 RatioBar Texture Fit Revision：面粉/水纹理不再使用固定长度 `_textureLength`。RatioBar 以两张纹理共同父节点 `workspace` 为裁切边界：面粉纹理从左边界贴到绿色 Indicator，水纹理从 Indicator 贴到右边界，并随 Indicator 自动缩放宽度。
+
+> 2026-06-30 Ingredient Tool Feedback Revision：水壶与面粉袋使用独立 `IngredientToolAnimator` 监听 `OnIngredientUsed`。有效左键加粉时面粉袋播放一次帧动画并缩放脉冲；有效右键按下时水壶播放一次帧动画并缩放脉冲。旧 `SpriteFlipbook` 场景组件停用，仅保留帧资源引用。
 
 > 2026-06-29 Ingredient Texture Animation Revision（已作废）：RatioBar 的面粉区与水区分别使用 6 帧代码驱动 Sprite 翻页。常态 6 fps 循环；有效左键加粉时面粉区触发 0.2 秒快速翻页与 1.1 倍脉冲；有效右键按下时水区触发同样脉冲，持续按住期间以 3 倍速度翻页，松开恢复常速。动画触发复用 DoughSystem 的输入有效性门控，暂停、烤制及 DoughState=None 时不响应；所有计时使用 Time.deltaTime。
 

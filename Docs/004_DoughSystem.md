@@ -15,13 +15,16 @@
 
 > 2026-06-29 Gameplay Revision：左键每次点击从 `FlourClickMin~FlourClickMax` 随机加粉；右键每次按下从 `WaterSpeedMultiplierMin~WaterSpeedMultiplierMax` 抽取倍率，本次长按期间固定，松开后清除。本文旧版固定 FlourClickAmount、固定 WaterFillRate 速度描述由本修订覆盖。
 
+> 2026-06-30 Input Feedback Revision：有效左键加粉时发布 `OnIngredientUsed(Flour)`；有效右键按下并生成本次水速倍率时发布 `OnIngredientUsed(Water)`。右键长按期间不每帧重复发布，确保水壶动画每次按下只播放一遍。
+
 > 2026-06-29 Visual 备注：桌上面团的"揉制长大"表现由独立 UI 组件 `DoughVisual` 负责（详见 009_UISystem），**纯视觉、不影响 DoughSystem 逻辑**（ratio/命中判定不变）。面团大小不进入任何判定。
 
 ### Revision Acceptance Criteria
 
-- [ ] 每次左键点击独立抽取 0.5～1 格并立即应用
-- [ ] 右键按下时仅抽取一次倍率，持续按住期间使用同一倍率
+- [ ] 每次左键点击独立抽取 0.3～2.0 格并立即应用
+- [ ] 右键按下时仅抽取一次 0.5～3.0 倍率，持续按住期间使用同一倍率
 - [ ] 松开右键后，下次按下重新抽取倍率
+- [ ] 有效左键点击发布一次 `OnIngredientUsed(Flour)`，有效右键按下发布一次 `OnIngredientUsed(Water)`
 - [ ] 暂停、烤制或 DoughState=None 时不抽取也不应用随机输入
 
 | 字段 | 内容 |

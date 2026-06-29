@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace GWBGameJam
 {
@@ -15,6 +16,8 @@ namespace GWBGameJam
         {
             public Transform Visual;
             public SpriteRenderer Renderer;
+            public RectTransform UiVisual;
+            public Image UiImage;
             public Sprite NormalSprite;
             public Sprite HoveredSprite;
         }
@@ -150,10 +153,21 @@ namespace GWBGameJam
         {
             if (laneIndex < 0 || laneIndex >= _laneVisuals.Length) return;
             var v = _laneVisuals[laneIndex];
+            Sprite sprite = hovered ? v.HoveredSprite : v.NormalSprite;
             if (v.Renderer != null)
-                v.Renderer.sprite = hovered ? v.HoveredSprite : v.NormalSprite;
+            {
+                v.Renderer.sprite = sprite;
+                v.Renderer.enabled = sprite != null;
+            }
+            if (v.UiImage != null)
+            {
+                v.UiImage.sprite = sprite;
+                v.UiImage.enabled = sprite != null;
+            }
             if (v.Visual != null)
                 v.Visual.localScale = hovered ? Vector3.one * _hoverScaleMultiplier : Vector3.one;
+            if (v.UiVisual != null)
+                v.UiVisual.localScale = hovered ? Vector3.one * _hoverScaleMultiplier : Vector3.one;
         }
 
         public bool TryGetWaypoint(int laneIndex, int posIndex, out Vector2 position)
