@@ -922,6 +922,6 @@ Architecture / CodingRules / TaskBreakdown / ManualInstructions / Code 已完全
 ========================================
 [2026-06-29 推送主分支修改]
 指令：请推送
-操作：将当前 main 工作区改动统一暂存并提交；尝试推送到当前跟踪远端 upstream/main，因 GitHub 权限被拒绝，随后改为推送到 origin/main。
+操作：将当前 main 工作区改动统一暂存并提交；尝试推送到当前跟踪远端 upstream/main，因 GitHub 权限被拒绝，随后改为推送到 origin/main；origin/main 非快进，已 fetch 并合并 origin/main，解决 Resources meta 与 Packages/manifest.json 冲突。
 状态：完成
-备注：提交包含代码审查修复与此前已完成的 MCP 本地配置隔离改动；upstream/main 拒绝 mianyoubiaoqing 写入权限。
+备注：提交包含代码审查修复与此前已完成的 MCP 本地配置隔离改动；upstream/main 拒绝 mianyoubiaoqing 写入权限；manifest 保留 CoplayDev MCP，Resources meta 保留 origin/main GUID。
