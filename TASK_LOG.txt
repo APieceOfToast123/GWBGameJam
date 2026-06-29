@@ -1,0 +1,951 @@
+GWBGameJam - 任务完成记录
+========================================
+
+[2026-06-27 13:40]
+任务：确认项目目录可访问，创建任务日志文件
+状态：完成
+备注：项目位于 D:\Unity Workplace\GWBGameJam，包含完整 Unity 项目结构（Assets、Packages、ProjectSettings、.git 等），已连接 GitHub 仓库 APieceOfToast123/GWBGameJam。
+
+========================================
+
+[2026-06-27 当前会话]
+任务：阅读 TASK_LOG.txt，建立每次对话后自动追加任务摘要的工作流
+状态：完成
+备注：用户要求每次对话结束后将本次任务摘要（含时间）写入 TASK_LOG.txt。已确认文件结构，记忆已保存。
+
+========================================
+
+[2026-06-27]
+指令：将 TASK_LOG.txt 作为开发文档，每次执行任何指令都要记录进去
+操作：更新记忆规则，改为每次执行指令后立即追加记录（而非仅在对话结束时）
+状态：完成
+备注：日志格式包含时间、指令、操作、状态、备注字段
+
+========================================
+
+[2026-06-27 对话阶段]
+指令：进行揉面团小游戏的 Spec 设计对话
+操作：通过多轮对话完成完整游戏设计文档，涵盖所有系统
+状态：完成
+备注：
+  核心玩法 - 上半屏5条透视球道+怪物，下半屏揉面桌
+  面团系统 - 5档（太软/最软3:2/中等1:1/最硬1:2/太硬），各对应不同怪物或无效
+  烤制系统 - 0~0.5s不熟，0.5~1.5s熟（有效），1.5s+烤焦，2.5s强制丢出（Config可调）
+  怪物系统 - 3种，8步移动到桌子，40个点位由Editor计算器生成，ScaleCurve控制透视缩放
+  关卡系统 - 3关（10/15/20只怪，9s/7s/5s生成间隔），击败全部怪物通关
+  桌子HP   - 计数制，被碰N次阵亡（Config可调）
+  对应关系 - 最软/中等/最硬分别击杀A/B/C怪物（Config可配）
+  菜单     - Main Menu / Pause Menu / 阵亡界面 / 通关界面
+  开发工具 - Editor点位计算器 / Ctrl+Shift+P游戏内加速切换
+
+========================================
+
+[2026-06-27 对话阶段]
+指令：建立 DecisionLog.md 及开发工作流规则
+操作：创建 DecisionLog.md（记录今日全部设计决定）；将工作流规则存入 AI 记忆；更新 MEMORY.md 索引
+状态：完成
+备注：
+  - DecisionLog 路径：D:\Unity Workplace\GWBGameJam\DecisionLog.md
+  - 需求三分类：Gameplay/Balance/Tech
+  - 改动前固定先分析，不直接写代码
+  - Balance 数值全部走 ScriptableObject，策划 Inspector 直接改
+
+========================================
+
+[2026-06-27 Spec Design Phase]
+指令：针对5个歧义问题收集答案，推进Spec封版
+操作：确认所有歧义（面团区间制、操作方式、怪物逃跑计总数、落点锁定+预测机制、关卡过渡重置）；更新DecisionLog
+状态：完成
+备注：所有前置问题已解决，等待用户确认后开始写第一个Spec
+
+========================================
+
+[2026-06-27 Spec Design Phase — 结构修正]
+指令：用户对Spec顺序和工作流提出4处重要修正
+操作：更新Spec Tree顺序；新增013_CodingRules和014_ReviewChecklist；确立逐Spec Review工作流；更新AI记忆
+状态：完成
+备注：
+  关键修正1：Architecture移至第3位（GameLoop之后），原因：架构决策必须先于系统设计
+  关键修正2：UI跟着每个系统同步开发，不在最后统一写
+  关键修正3：新增013_CodingRules（AI每次编码前必读）
+  关键修正4：新增014_ReviewChecklist（每个Task完成后执行）
+  工作流：写Spec → Review → 更新DecisionLog → 同步Architecture → 用户确认 → 下一个Spec
+  下一步：写001_GameLoop.md（等待用户确认）
+
+========================================
+
+[2026-06-27 Spec Writing]
+指令：编写 001_GameLoop.md
+操作：创建 Docs/ 目录；按统一模板完整编写 GameLoop Spec
+状态：完成（Draft，等待Review）
+备注：
+  - 6个顶层状态：MAIN_MENU / PLAYING / PAUSED / LEVEL_TRANSITION / DEATH / VICTORY
+  - 13条 Acceptance Criteria
+  - Edge Case #1（关卡过渡界面内容）标记为待确认
+  - 路径：Docs/001_GameLoop.md
+
+========================================
+
+[2026-06-27 Spec Review]
+指令：Review 001_GameLoop.md，确认 Edge Case #1
+操作：用户确认方案B（按任意键过渡界面）；更新GameLoop Spec的Edge Case/状态表/AC；更新DecisionLog
+状态：完成
+备注：001_GameLoop.md 状态从 Draft → Approved（Edge Cases 全部解决）
+下一步：012_Architecture.md
+
+========================================
+
+[2026-06-27 Spec Writing]
+指令：编写 012_Architecture.md
+操作：创建 Docs/012_Architecture.md，涵盖EventBus规范、场景结构、Folder结构、命名规范、程序集划分、禁止模式、数据所有权表
+状态：完成（Approved，等待Review）
+备注：
+  - 静态泛型 EventBus<T>（纯 static class，T 为 readonly struct）
+  - 2个场景：MainMenu.unity + Game.unity
+  - 2个程序集：GWBGameJam.Runtime + GWBGameJam.Editor
+  - 顶级命名空间：GWBGameJam
+  - 禁止模式：FindObjectOfType / Singleton / GameObject.Find / GetComponent in Update 等
+  - Script Execution Order：GameLoop 最低（最晚执行）
+
+========================================
+
+[2026-06-27 Spec Review]
+指令：Review 012_Architecture.md，确认 Edge Case #2
+操作：用户确认方案A（OnDestroy自清理，无ClearAll）；更新Architecture Spec；更新DecisionLog（补录5条架构决策）
+状态：完成
+备注：012_Architecture.md 状态 Approved，所有 Edge Cases 解决
+下一步：010_ConfigSchema.md
+
+========================================
+
+[2026-06-27 Spec Writing]
+指令：编写 010_ConfigSchema.md
+操作：创建完整 Config 数据契约文档，覆盖9个SO定义、4个枚举、SO引用关系图
+状态：完成（Draft，等待Review）
+备注：
+  - 9个SO：GameLoopConfig/BakingConfig/MonsterConfig/LevelConfig/TableConfig/DoughConfig/DoughStateBoundaryConfig/LaneWaypointConfig/MonsterData
+  - LaneWaypointConfig使用 LaneWaypoints[] 包装 Vector2[]（Unity无法直接序列化二维数组）
+  - DoughStateBoundaryConfig独立SO，含4个边界阈值+1个容错半宽
+  - 所有约束违规在Awake中Validate并输出Error，游戏不崩溃
+  - 路径：Docs/010_ConfigSchema.md
+
+========================================
+
+[2026-06-27 Spec Review]
+指令：Review 010_ConfigSchema.md，确认A/B两问
+操作：确认水粉比方向（水÷面粉）；补入 RecordedStepCount 字段及过期检测逻辑；更新Edge Case/AC；更新DecisionLog
+状态：完成
+备注：010_ConfigSchema.md 状态 Draft → Approved
+下一步：002_LaneSystem.md
+
+========================================
+
+[2026-06-27 Spec Writing]
+指令：编写 002_LaneSystem.md
+操作：创建 Docs/002_LaneSystem.md，覆盖球道几何、悬停高亮、点位API、Editor计算器接口
+状态：完成（Draft，等待Review）
+备注：
+  - 5条透视四边形球道，PolygonCollider2D + 鼠标射线检测
+  - Visual/Collider 分离节点设计（缩放不影响碰撞判定）
+  - 悬停时替换Sprite + Visual节点Scale放大
+  - 公开API：GetWaypoint(laneIndex, posIndex) / GetHoveredLaneIndex()
+  - 发布事件：OnLaneHoverChanged
+  - 启动时验证LaneWaypointConfig过期检测
+  - 路径：Docs/002_LaneSystem.md
+
+========================================
+
+[2026-06-27 Spec Review]
+指令：Review 002_LaneSystem.md，确认悬停激活时机
+操作：用户确认方案B（仅烤制阶段激活）；更新Gameplay Rules/State Machine/Subscribe/Edge Case/AC；更新DecisionLog
+状态：完成
+备注：002_LaneSystem.md 状态 Draft → Approved；新增Edge Case #6（烤制结束时立即重置球道）
+下一步：003_MonsterSystem.md
+
+========================================
+========================================
+
+[2026-06-27 Spec Writing]
+指令：编写 003_MonsterSystem.md
+操作：创建 Docs/003_MonsterSystem.md，覆盖怪物生命周期、状态机、移动动画、透视缩放、公开API
+状态：完成（Draft，等待Review）
+备注：
+  - 状态机：Idle → PendingMove → Moving → Idle/ReachedTable；Defeated 从任意状态可触发
+  - 移动计时：MoveIntervalSeconds = 完整周期（等待+动画），MoveDuration = 动画部分（新增Config字段）
+  - 缩放插值：动画期间每帧由 ScaleCurve.Evaluate(lerp) 计算，静止时取对应 posIndex 的固定值
+  - 公开API：SpawnMonster/GetMonsterInLane/IsLaneOccupied/DefeatMonster/TriggerWrongHitFeedback/GetTargetPosition
+  - Edge Case #3：最后点位的PendingMove状态，GetTargetPosition 返回当前点而非越界
+  - MonsterConfig 新增：MoveDuration / WrongHitFlashCount / WrongHitFlashDuration（需回写 ConfigSchema）
+  - 路径：Docs/003_MonsterSystem.md
+
+========================================
+========================================
+
+[2026-06-27 ConfigSchema 追加更新]
+指令：用户确认003_MonsterSystem三个新Config字段，立即回写010_ConfigSchema.md
+操作：MonsterConfig 表格追加 MoveDuration/WrongHitFlashCount/WrongHitFlashDuration；补 MoveDuration 约束说明；补 Edge Case #6；版本号升至 1.1
+状态：完成
+备注：010_ConfigSchema.md 保持 Approved 状态（小版本追加，不影响已有字段）
+
+========================================
+========================================
+
+[2026-06-27 Spec Writing]
+指令：编写 004_DoughSystem.md（用户确认：UI弹性跟随、右键固定速率）
+操作：创建 Docs/004_DoughSystem.md；DoughConfig 追加 InitialRatio/MaxRatio 字段至 010_ConfigSchema v1.2；更新 DecisionLog
+状态：完成（Draft，等待Review）
+备注：
+  - CurrentRatio 立即更新（无平滑），UISystem 负责弹性动画
+  - 右键固定速率线性增加，每帧 ratio += WaterFillRate * dt
+  - 投掷窗口：OnThrowStarted→None / OnThrowCompleted→重置为 InitialRatio
+  - 输入有效条件：PLAYING + BakingState==Idle + DoughState!=None
+  - Edge Case #4：同档位内 ratio 变化不重复广播 OnDoughStateChanged
+  - 路径：Docs/004_DoughSystem.md
+
+========================================
+========================================
+
+[2026-06-27 Spec Writing]
+指令：编写 005_BakingSystem.md（用户确认：松开即投、无悬停→随机球道）
+操作：创建 Docs/005_BakingSystem.md；更新 DecisionLog（3条烤制决策）
+状态：完成（Draft，等待Review）
+备注：
+  - 计时器：Idle→Undercooked→Cooked→Burnt→强制投掷→Idle
+  - 投掷球道：GetHoveredLaneIndex() == -1 时 Random.Range(0,5)，主动和强制规则相同
+  - 投掷后立即回 Idle，不等待 ThrowSystem 动画
+  - DoughState=None 时空格无效（边界保护）
+  - 暂停时冻结 timer（_isPaused 标志位）
+  - DevSpeedMultiplier 通过 Time.deltaTime 自动生效
+  - 路径：Docs/005_BakingSystem.md
+
+========================================
+========================================
+
+[2026-06-27 Spec Writing]
+指令：编写 006_ThrowSystem.md（抛物线动画、到达即判定）
+操作：创建 Docs/006_ThrowSystem.md；010_ConfigSchema 升至 v1.3（新增 ThrowConfig SO + SO引用关系）；更新 DecisionLog（4条投掷决策）
+状态：完成（Draft，等待Review）
+备注：
+  - 抛物线公式：pos(t)=Lerp(start,end,t)+up*PeakHeight*4t(1-t)，固定 ThrowDuration
+  - 比例在 OnThrowRequested 同帧捕获（_capturedRatio），飞行期间不变
+  - 命中判定：|capturedRatio - doughStateCenter| <= ToleranceHalfWidth
+  - EmptyLane 落点：LaneSystem.GetWaypoint(laneIndex, MoveStepCount/2)
+  - 到达时立即判定（同帧），特效不阻塞事件流
+  - 路径：Docs/006_ThrowSystem.md
+
+========================================
+========================================
+
+[2026-06-27 Spec Writing]
+指令：确认005/006后继续写 008_TableSystem.md
+操作：创建 Docs/008_TableSystem.md
+状态：完成（Draft，等待Review）
+备注：
+  - 纯计数系统：OnMonsterReachedTable → CurrentHP -= 1 → HP=0 发布 OnTableDestroyed
+  - Guard check 防止同帧多次 OnTableDestroyed
+  - OnLevelStarted 重置 HP = MaxHits
+  - MaxHits=0 时 Awake 强制为 1
+  - 路径：Docs/008_TableSystem.md
+
+========================================
+========================================
+
+[2026-06-27 Spec Writing]
+指令：编写 007_LevelSystem.md（第一只怪物延迟生成、全满完整重置）
+操作：创建 Docs/007_LevelSystem.md；更新 DecisionLog（2条关卡设计决策）
+状态：完成（Draft，等待Review）
+备注：
+  - 状态机：WaitingToSpawn / WaitingForAllExit / Inactive / Paused
+  - 全满时 _spawnTimer = 0（等待下一个完整间隔，方案B）
+  - 退场 = OnMonsterDefeated + OnMonsterReachedTable 各计1次
+  - _exitedCount == TotalMonsters → OnLevelCleared
+  - _availableMonsterTypes 为 Inspector [SerializeField] MonsterData[] 数组
+  - OnLevelStarted 携带 levelIndex（int）以加载对应 LevelData
+  - 路径：Docs/007_LevelSystem.md
+
+========================================
+========================================
+
+[2026-06-27 Spec Writing]
+指令：编写 009_UISystem.md（左=水/右=粉，不显示进度数字）
+操作：创建 Docs/009_UISystem.md；更新 DecisionLog（3条UI决策）
+状态：完成（Draft，等待Review）
+备注：
+  - Canvas 面板：HUD/MainMenu/PauseMenu/LevelTransition/Death/Victory
+  - 比例条：左=水(软)，右=粉(硬)，指示器弹性跟随（ElasticSpeed=12，SerializeField）
+  - DoughState=None时隐藏指示器；OnThrowCompleted后 snap 回 InitialRatio
+  - 烤制指示器：黄/绿/红三色 + 进度条，每帧读 GetBakingTimer()
+  - 桌子HP条：订阅 OnMonsterReachedTable / OnLevelStarted
+  - Action Required：LevelTransition 关卡号数据来源待 GameLoop Review 最终确认
+  - 路径：Docs/009_UISystem.md
+
+========================================
+========================================
+
+[2026-06-27 Spec Writing]
+指令：编写 011_DevTools / 013_CodingRules / 014_ReviewChecklist
+操作：创建三个文档
+状态：完成（Draft，等待Review）
+备注：
+  011_DevTools：EditorWindow + LaneCalculatorData SO；Auto Distribute + Bake + Preview；交点算法（t = (y-y1)/(y2-y1)）；顶点按X排序识别左右边缘
+  013_CodingRules：禁止模式表、EventBus配对规范、Awake Validate模式、Update计时/协程规则、文件结构、场景层级
+  014_ReviewChecklist：10节检查清单（禁止模式/EventBus/Awake/命名空间/SO/数据所有权/Spec符合性/Unity实践/日志/TASK_LOG）
+  路径：Docs/011_DevTools.md / Docs/013_CodingRules.md / Docs/014_ReviewChecklist.md
+
+========================================
+========================================
+
+[2026-06-27 工作流文档]
+指令：编写 CLAUDE.md 和 StarterPrompt，供工友启动 Spec Coding 工作流
+操作：创建根目录 CLAUDE.md（Claude 自动加载的项目指南）；创建 Docs/StarterPrompt.md（含可复制 prompt 和常见场景参考）
+状态：完成
+备注：
+  CLAUDE.md 覆盖：项目概述/Spec状态表/工作流三分类/TASK_LOG规则/核心技术约束/重要文件路径
+  StarterPrompt.md 覆盖：启动 prompt（可直接复制）+ 4 种使用场景 + 5 个常见 prompt 参考
+
+========================================
+========================================
+
+[2026-06-27 文档]
+指令：为工友写 README.md
+操作：创建根目录 README.md
+状态：完成
+备注：覆盖游戏玩法简介、环境要求、快速开始、项目结构、Claude 使用方法（含可复制 prompt）、Balance 调整速查表、关键文档索引
+
+========================================
+========================================
+
+[2026-06-27 Task Breakdown]
+指令：进入 Task Breakdown 阶段，拆解编码任务
+操作：创建 Docs/TaskBreakdown.md，共 22 个 Task，6 个 Phase
+状态：完成
+备注：
+  Phase 0（T01-T05）：基础设施（asmdef/Enum/EventBus/SO类/SO资产）
+  Phase 1（T06）：GameLoop 状态机
+  Phase 2（T07）：场景层级搭建
+  Phase 3（T08-T14）：7 个系统按依赖顺序实现
+  Phase 4（T15-T17）：UI（Canvas切换/比例条/烤制指示器/HP条）
+  Phase 5（T18）：DevTools LaneCalculator
+  Phase 6（T19-T22）：Prefab/连线/烘焙/集成测试
+  ⚠️ T04 注意：Architecture 草稿事件命名与 System Spec 有差异，T04 以 System Spec 为准
+
+========================================
+========================================
+
+[2026-06-27 编码阶段 Phase 0-1]
+指令：执行 T01~T06
+操作：
+  T01: 创建2个asmdef + 10个子目录
+  T02: GameEnums.cs（4枚举）+ EventBus.cs（静态泛型，Publish异常隔离，Subscribe并发安全）
+  T03: 12个SO类定义（GameLoopConfig/BakingConfig/MonsterConfig/LevelConfig/LevelData/TableConfig/DoughConfig/DoughStateBoundaryConfig/LaneWaypointConfig/LaneWaypoints/MonsterData/ThrowConfig）
+  T04: 8个Event Struct文件（GameLoopEvents/MonsterEvents/DoughEvents/BakingEvents/ThrowEvents/LaneEvents/LevelEvents/TableEvents）
+  T06: GameLoop.cs（状态机、同帧冲突处理、DevSpeed、Pause）
+状态：完成
+备注：
+  T05（SO Assets创建）需在Unity Editor手动操作，已跳过等待
+  EventBus使用buffer list处理Publish期间的Subscribe/Unsubscribe，避免迭代器失效
+  GameLoop同帧OnTableDestroyed+OnLevelCleared → 下一帧Update中优先处理Death
+  LevelTransition→下一关由 AdvanceFromTransition() 公开方法触发（UISystem按钮调用）
+
+========================================
+========================================
+
+[2026-06-27 手动操作指引]
+指令：为 T05 和 T07 生成手动操作 Instruction
+操作：创建 Docs/ManualInstructions.md，含 T05（SO Assets）和 T07（场景层级）的分步操作说明
+状态：完成
+备注：等待用户完成 T05+T07 后继续 T08
+
+========================================
+
+[2026-06-27 Consistency Review]
+指令：以代码为 Source of Truth，检查 Architecture / TaskBreakdown / 代码 三者命名和目录一致性
+操作：
+  发现 12 处 Architecture 文档过期，全部分类为「文档过期」，代码无需改动
+  更新 012_Architecture.md（版本 1.0 → 1.1）：
+  1. Folder 结构：删除按系统分子目录（GameLoop/ Lane/ Monster/ 等），改为代码实际使用的按类型分（Core/ Config/ Events/ Systems/ UI/）
+  2. Editor asmdef 路径：Assets/Scripts/Editor/ → Assets/Editor/（与 Scripts/ 平级）
+  3. Events 列表：删除 OnGamePaused/OnGameResumed/OnDoughCleared/OnBreadLaunched/OnThrowResolved/OnTableHit；新增 OnThrowRequested/OnThrowStarted/OnThrowCompleted；新增 LaneEvents.cs/OnLaneHoverChanged
+  4. 数据所有权表：删除 OnTableHit（TableSystem 直接订阅 OnMonsterReachedTable）
+  5. MonoBehaviour 命名规范：移除强制 [System]Manager，改为「以各 System Spec 定义为准」，并附汇总表
+  6. Namespace：删除 GWBGameJam.Editor 子命名空间（CodingRules 规定统一用 GWBGameJam）
+  7. UI 节点命名：由 HUD/PauseMenu/DeathScreen 等统一为 _Canvas 后缀（HUD_Canvas / PauseMenu_Canvas 等），与 ManualInstructions.md 对齐
+  8. Prefabs 目录：Projectiles/ → Projectile/（单数，与实际目录一致）
+  TaskBreakdown.md：已对齐，无需修改（T01 已正确写 Assets/Editor/，T04 已用 System Spec 事件名）
+状态：完成
+备注：
+  全部差异均为「文档过期」，代码无需改动
+  后续所有新增代码的命名以本次对齐后的 Architecture v1.1 为准
+  等待用户完成 T05 + T07 后继续 T08 LaneSystem
+
+========================================
+
+[2026-06-27 Consistency Review — 补充修复]
+指令：删掉 Game.unity 的 MainMenu_Canvas；同时修 DRIFT-1 / DRIFT-2
+操作：
+  DRIFT-3（用户决定）：从 Architecture §Game.unity 层级、ManualInstructions T07 中移除 MainMenu_Canvas；
+    加注警告"不要在 Game.unity 里创建 MainMenu_Canvas"；
+    GoToMainMenu() 走 SceneManager.LoadScene，不走 Canvas 切换
+  DRIFT-1（无歧义文档修正）：Architecture §订阅生命周期表格 OnEnable 配对栏改为 "OnDisable / OnDestroy"，与 CodingRules 示例对齐
+  DRIFT-2（无歧义文档修正）：Architecture §Folder、CodingRules §文件结构、Architecture §AC 中 Config/ 描述补充"及配套 [Serializable] 数据类"
+  DecisionLog 追加 [UI] MainMenu_Canvas 决策
+状态：完成
+备注：Remaining drift = 0；等待宣布 ARCHITECTURE FROZEN
+
+========================================
+
+[2026-06-27 手动操作完成]
+指令：T05 和 T07 完成，继续 T08
+操作：用户确认 T05（SO Assets 创建）和 T07（场景层级搭建）已在 Unity 中手动完成
+状态：完成
+备注：Game.unity 层级已按 ManualInstructions 建立（无 MainMenu_Canvas）；开始编码 T08 LaneSystem
+
+========================================
+
+[2026-06-27 编码 T08]
+指令：实现 T08 LaneSystem（LaneManager + LaneHoverDetector）
+操作：
+  新建 Assets/Scripts/Systems/LaneManager.cs
+    - Awake：ValidateConfig（null 检查 + RecordedStepCount 过期检测）
+    - OnEnable/OnDestroy：订阅/取消订阅 OnGameStateChanged + OnBakingStateChanged
+    - IsHoverActive 属性：_isPlayingState && _isBakingActive && !_hasConfigError
+    - Update：_needsHoverCheck 触发后用 Physics2D.OverlapPoint 一次性重偵测悬停（Resume 场景）
+    - HandleGameStateChanged / HandleBakingStateChanged：active 状态变化时 ResetAllLanes 或 _needsHoverCheck
+    - OnLaneEnter / OnLaneExit：供 LaneHoverDetector 调用的 public 方法
+    - SetHoveredLane：切换悬停状态 + 发布 OnLaneHoverChanged
+    - ApplyVisual：切换 SpriteRenderer.sprite + Visual.localScale
+    - GetWaypoint / GetHoveredLaneIndex：公开 API，含越界保护
+    - OnDrawGizmos：Scene 视图显示 40 个点位球体
+  新建 Assets/Scripts/Systems/LaneHoverDetector.cs
+    - 挂 Collider 子节点；Awake 检查 _laneManager 引用
+    - OnMouseEnter/Exit → LaneManager.OnLaneEnter/Exit
+  ReviewChecklist：全部通过（11 条 AC 均覆盖）
+状态：完成
+备注：
+  T21（球道点位烘焙）前 RecordedStepCount=0 != MoveStepCount=8，Awake 会输出 Error 属预期行为
+  GetComponent in Update 仅在 _needsHoverCheck=true 时执行一次（不是每帧）
+
+========================================
+
+[2026-06-27 只读 Audit — Architecture Frozen 确认]
+指令：暂停开发，执行只读 Audit，确认 3 个 Drift 已全部解决
+操作：
+  逐一核对 012_Architecture.md、013_CodingRules.md、代码 25 个 .cs 文件
+  DRIFT-1（EventBus 生命周期）：Architecture 表格 "OnEnable → OnDisable / OnDestroy" ✓
+  DRIFT-2（Config/ 描述）：Architecture + CodingRules 均已说明 Serializable 辅助类共存 ✓
+  DRIFT-3（MainMenu_Canvas）：Architecture 层级图无 MainMenu_Canvas，ManualInstructions 有警告注 ✓
+  全面扫描 namespace、asmdef 路径、Events 清单、Systems 目录、禁止模式：无新 Drift
+  Remaining drift = 0
+状态：完成
+
+========================================
+
+[Architecture Frozen]
+
+Architecture Version: v1.1
+CodingRules Version: Approved
+TaskBreakdown Version: Approved
+
+Remaining Drift = 0
+
+Architecture / CodingRules / TaskBreakdown / ManualInstructions / Code 已完全一致。
+
+本版本作为 Frozen Baseline。
+
+========================================
+（后续每次完成任务后追加记录）
+
+========================================
+
+[2026-06-27 Summarize Context]
+指令：Summarize Context（上下文压缩后执行全量同步）
+操作：
+  Phase B — Consistency Audit：
+    Architecture v1.1 Frozen，Remaining Drift = 0（已确认）
+    文档同步 Drift 发现 3 项：TaskBreakdown T05/T07/T08 状态列过期
+  Phase C — 同步：
+    TaskBreakdown.md：T05 → ✅完成（手动），T07 → ✅完成（手动），T08 → ✅完成；T03 计数 10→12
+    README.md：新增「当前开发进度」章节（含各阶段状态与下一步）
+    PROJECT_SNAPSHOT.md：首次创建（进度总览 / 已完成任务 / 剩余工作 / 风险 / 健康度）
+    TASK_LOG.txt：追加本条记录
+  Phase D — Final Audit：Remaining Drift = 0，Architecture Frozen 有效
+状态：完成
+备注：
+  下一步：T09 DoughSystem（Spec：Docs/004_DoughSystem.md）
+  T20 Inspector 连线（LaneSystem 部分）可在 T09 之前或之后进行
+
+========================================
+
+[2026-06-27 编码 T09]
+指令：继续，实现 T09 DoughSystem
+操作：
+  新建 Assets/Scripts/Systems/DoughSystem.cs
+    - Awake：ValidateConfig（_config + _boundaryConfig null 检查，_hasConfigError 防崩溃）
+    - OnEnable/OnDestroy：订阅/取消订阅 5 个事件（OnGameStateChanged / OnBakingStateChanged / OnLevelStarted / OnThrowStarted / OnThrowCompleted）
+    - IsInputActive 属性：!_hasConfigError && _isPlayingState && _isBakingIdle && DoughState != None
+    - Update：IsInputActive 为 true 时处理左键（ApplyFlour）和右键长按（ApplyWater）
+    - ApplyFlour：ratio -= FlourClickAmount，Clamp(0, MaxRatio)，DeriveAndPublishState
+    - ApplyWater：ratio += WaterFillRate * dt，Clamp(0, MaxRatio)，DeriveAndPublishState
+    - DeriveAndPublishState：GetDoughState(ratio)，仅在状态变化时广播 OnDoughStateChanged（Edge Case #4）
+    - ResetToInitial：ratio = InitialRatio，推导新状态，变化时广播
+    - HandleThrowStarted：直接设 None，prev != None 时广播
+    - GetCurrentRatio() / GetCurrentDoughState()：公开 API 供 UISystem 和 ThrowSystem 读取
+  ReviewChecklist：全部通过（11 条 AC 均覆盖）
+状态：完成
+备注：
+  BakingSystem（T12）尚未编写，_isBakingIdle 默认 true，不影响当前输入有效性
+  DoughState=None 时 IsInputActive 自动阻断，无需额外检查
+
+========================================
+
+[2026-06-27 编码 T10]
+指令：继续，实现 T10 TableSystem
+操作：
+  新建 Assets/Scripts/Systems/TableSystem.cs
+    - Awake：null 检查 _config，_config.Validate()（MaxHits<1→Error+强制为1）
+    - OnEnable/OnDestroy：订阅/取消订阅 OnMonsterReachedTable + OnLevelStarted
+    - HandleMonsterReachedTable：_currentHP <= 0 则 guard return；否则 _currentHP--，归零时发布 OnTableDestroyed
+    - HandleLevelStarted：_currentHP = MaxHits（无论上一关 HP 残余多少）
+    - GetCurrentHP() / GetMaxHP()：公开 API 供 UISystem 读取
+  ReviewChecklist：全部通过（6 条 AC 均覆蓋）
+状态：完成
+备注：
+  同帧多次 OnMonsterReachedTable 的 guard：_currentHP <= 0 检查确保 OnTableDestroyed 只广播一次
+  TableConfig 自带 Validate()，在 Awake 中显式调用
+
+========================================
+
+[2026-06-27 编码 T11]
+指令：继续，实现 T11 MonsterSystem（MonsterController + MonsterSystem）
+操作：
+  新建 Assets/Scripts/Systems/MonsterController.cs
+    - Awake：null 检查 _visual + _spriteRenderer（prefab 序列化引用）
+    - Initialize(laneIndex, data, config, laneManager)：设置所有运行时数据、初始位置与缩放
+    - Update：计时（UpdateTimer）或动画（UpdateMovement），_config == null 时 guard return
+    - StartMoving：posIndex >= MoveStepCount-1 时直接 ReachedTable；否则设置 moveFrom/moveTo 并开始动画
+    - UpdateMovement：Lerp position + ScaleCurve 插值，progress >= 1 时 FinishMoving
+    - FinishMoving：posIndex = targetPosIndex，重置 moveTimer
+    - ReachedTable：发布 OnMonsterReachedTable → Destroy
+    - Defeat：发布 OnMonsterDefeated → Destroy
+    - TriggerWrongHitFeedback：启动 FlashCoroutine（HitSprite/IdleSprite 交替，WaitForSeconds）
+    - GetTargetPosition：IsPendingMove && posIndex < MoveStepCount-1 → 下一点位；否则当前点位
+    - OnDestroy：StopAllCoroutines
+  新建 Assets/Scripts/Systems/MonsterSystem.cs
+    - Awake：ValidateConfig（4 个 SerializeField + _config.Validate()）
+    - OnEnable/OnDestroy：订阅/取消 OnGameStateChanged（TimeScale 已自动暂停，handler 为空+注释）
+    - SpawnMonster：IsLaneOccupied guard → Instantiate → Initialize → _monsters[i] = mc → 发布 OnMonsterSpawned
+    - DefeatMonster：先 null array 再调 Defeat（避免 event handler 重复清理）
+    - IsLaneOccupied：依赖 Unity null check（Destroy 后引用自动为 null）
+    - GetMonsterInLane / TriggerWrongHitFeedback / GetTargetPosition：边界检查 + null check
+  ReviewChecklist：全部通过（12 条 AC 均覆盖）
+状态：完成
+备注：
+  MonsterController 不订阅任何事件（由 MonsterSystem 统一管理）
+  MonsterSystem 不订阅 OnMonsterDefeated/OnMonsterReachedTable（依赖 Unity null check + DefeatMonster 显式清理）
+  闪白协程使用 WaitForSeconds（随 TimeScale=0 自动暂停），符合 CodingRules 规定
+
+========================================
+
+[2026-06-27 编码 T12]
+指令：继续，实现 T12 BakingSystem
+操作：
+  新建 Assets/Scripts/Systems/BakingSystem.cs
+    - Awake：ValidateConfig（_config/_laneManager/_doughSystem null 检查 + _config.Validate()）
+    - OnEnable/OnDestroy：订阅/取消订阅 OnGameStateChanged
+    - Update：!_isPlayingState 时 return；HandleSpaceInput；非 Idle 时 AdvanceTimer
+    - HandleSpaceInput：Idle 时检查 GetKeyDown+DoughState!=None → StartBaking；非 Idle 时检查 GetKeyUp → TriggerThrow
+    - StartBaking：timer=0，Undercooked，发布 OnBakingStateChanged(Undercooked, Idle)
+    - AdvanceTimer：deltaTime 累加；达阈值时 TransitionTo(Cooked/Burnt) 或 TriggerThrow（强制）
+    - TriggerThrow：GetHoveredLaneIndex() < 0 时 Random.Range(0,5)+Debug.Log；先设 Idle+timer=0，再发布 OnThrowRequested + OnBakingStateChanged(Idle, prev)
+    - HandleGameStateChanged：!wasPlaying && isPlaying && PreviousState!=Paused → ResetToIdle（防止关卡切换时残留非Idle状态）
+    - ResetToIdle：timer=0，Idle，发布 OnBakingStateChanged(Idle, prev)
+  ReviewChecklist：全部通过（11 条 AC 均覆盖）
+状态：完成
+备注：
+  HandleGameStateChanged 中增加了 Spec 未明确说明的 ResetToIdle 逻辑：防御性修复，避免玩家在关卡结束时持有空格导致新关卡开始时 BakingState 残留非 Idle
+  Paused→Playing 不触发 Reset（e.PreviousState != Paused 守衛），恢复时保留烤制进度
+
+========================================
+
+[2026-06-27 编码 T13]
+指令：继续，实现 T13 ThrowSystem
+操作：
+  新建 Assets/Scripts/Systems/ThrowSystem.cs
+    - Awake：ValidateConfig（8个 SerializeField 全 null→Error；_explosionPrefab null→Warning 非 Error）
+    - OnEnable/OnDestroy：订阅/取消订阅 OnThrowRequested + OnGameStateChanged；OnDestroy 销毁 _activeProjectile 不发布事件
+    - HandleThrowRequested：同帧捕获 _capturedRatio+_startPos；有怪物→GetTargetPosition，无怪物→GetWaypoint(laneIndex, MoveStepCount/2)；Instantiate Projectile；_inFlight=true；发布 OnThrowStarted
+    - Update：!_inFlight||!_isPlayingState 时 return；_flightTimer+=dt；t=Clamp01；抛物线公式更新 Projectile 位置；t>=1 → CompleteThrow
+    - CompleteThrow：_inFlight=false；DetermineResult；Hit→DefeatMonster+InstantiateExplosion；WrongRatio→TriggerWrongHitFeedback；Destroy Projectile；发布 OnThrowCompleted
+    - DetermineResult：monster==null→EmptyLane；GetCenterRatio<0→WrongRatio；|capturedRatio-center|<=ToleranceHalfWidth→Hit；else WrongRatio
+    - HandleGameStateChanged：更新 _isPlayingState
+  ReviewChecklist：全部通过（9 条 AC 均覆盖）
+状态：完成
+备注：
+  命中判定在 CompleteThrow 时重读 GetMonsterInLane（覆盖 EdgeCase #1/#2 怪物逃跑/新生成）
+  _explosionPrefab null 不设 _hasConfigError，允许无 VFX 情况下开发测试
+  DetermineResult 中 GetCenterRatio<0 对应 TooSoft/TooHard/None 状态（DoughStateBoundaryConfig 返回 -1）
+
+========================================
+[2026-06-27 编码 T14]
+指令：继续，实现 T14 LevelSystem（5任务自动继续系列 1/5）
+操作：
+  新建 Assets/Scripts/Systems/LevelSystem.cs
+    - SerializeField：LevelConfig、MonsterSystem、MonsterData[]（3个 null→Error）
+    - Awake：ValidateConfig（全部 null 检查）
+    - OnEnable/OnDestroy：订阅/取消订阅 OnLevelStarted、OnMonsterDefeated、OnMonsterReachedTable、OnGameStateChanged（共 4 对）
+    - HandleLevelStarted：设 _currentLevelIndex（越界→取最后一关+Warning）；重置计数器；_isSpawningActive=true
+    - Update：!_isPlayingState||!_isSpawningActive 时 return；_spawnTimer+=dt；到达间隔→TrySpawn
+    - TrySpawn：已满→停止生成；随机空闲球道+随机怪物类型；SpawnMonster失败→LogWarning 不计数；_spawnTimer=0f
+    - HandleMonsterDefeated/HandleMonsterReachedTable：_exitedCount++；CheckLevelCleared（>=TotalMonsters→发布 OnLevelCleared）
+    - 公共 API：GetExitedCount、GetTotalMonsters、GetCurrentLevelIndex
+  ReviewChecklist：通过
+状态：完成
+备注：
+  _isSpawningActive 初始 false，Update 在 OnLevelStarted 前永不进入生成逻辑
+  _exitedCount 同时计入被打败与到达桌子的怪物，CheckLevelCleared 防止重复发布
+
+========================================
+[2026-06-27 编码 T15]
+指令：继续，实现 T15 UISystem（Canvas 面板切换）（5任务自动继续系列 2/5）
+操作：
+  新建 Assets/Scripts/UI/UISystem.cs
+    - SerializeField：5个 Canvas GO（null→Error）；LevelSystem、TMP_Text（null→Warning）
+    - OnEnable/OnDestroy：订阅/取消订阅 OnGameStateChanged + OnLevelCleared（2 对）
+    - HandleLevelCleared：缓存 _clearedLevelIndex = LevelSystem.GetCurrentLevelIndex()
+    - HandleGameStateChanged：HUD=Playing||Paused；各面板按状态切换；LevelTransition 时更新文本
+    - 无 MainMenu_Canvas（Architecture FROZEN；MAIN_MENU 状态全面板 inactive）
+  ReviewChecklist：通过
+状态：完成
+备注：
+  OnLevelCleared 在 OnGameStateChanged(LevelTransition) 之前发布，_clearedLevelIndex 缓存时序正确
+
+========================================
+[2026-06-27 编码 T16]
+指令：继续，实现 T16 RatioBar（弹性比例指示器）（5任务自动继续系列 3/5）
+操作：
+  新建 Assets/Scripts/UI/RatioBar.cs
+    - SerializeField：DoughSystem、DoughConfig、DoughStateBoundaryConfig（null→Error）；IndicatorRect（null→Error）；3参考线 RectTransform
+    - Update：懒初始化参考线（rect.width>0 时首次）；DoughState==None→隐藏指示器；Lerp _displayedRatio；更新位置
+    - HandleDoughStateChanged：PreviousState==None→snap InitialRatio（避免从旧位置弹回）
+    - HandleLevelStarted：snap InitialRatio
+    - Bug fix：DoughState.Soft/Hard 不存在，已修正为 Softest/Hardest
+  ReviewChecklist：通过
+状态：完成
+
+========================================
+[2026-06-27 编码 T17]
+指令：继续，实现 T17 BakingIndicator + TableHPBar（5任务自动继续系列 4/5）
+操作：
+  新建 Assets/Scripts/UI/BakingIndicator.cs
+    - OnBakingStateChanged 订阅/取消（1对）
+    - Update：fillAmount=Clamp01(timer/BurntForcedThrowDuration)，Idle时=0
+    - HandleBakingStateChanged：switch→color
+  新建 Assets/Scripts/UI/TableHPBar.cs
+    - OnMonsterReachedTable + OnLevelStarted 订阅/取消（2对）
+    - 无 Update：纯事件驱动；UpdateDisplay：ratio=CurrentHP/MaxHP；fillAmount+三档颜色
+  ReviewChecklist：通过
+状态：完成
+
+========================================
+[2026-06-27 编码 T18]
+指令：继续，实现 T18 LaneCalculatorData + LaneCalculatorWindow（Editor 工具）（5任务自动继续系列 5/5）
+操作：
+  新建 Assets/Editor/LaneCalculatorData.cs
+    - ScriptableObject [CreateAssetMenu]；WaypointYPositions(8)；LaneRootNames(5)
+  新建 Assets/Editor/LaneCalculatorWindow.cs
+    - EditorWindow [MenuItem("GWBGameJam/Lane Waypoint Calculator")]
+    - Auto Distribute：扫描球道 PolygonCollider2D → yMin/yMax → 5% margin → 均分 stepCount 个 Y 值
+    - Bake：预验证全部 GO + Collider；4顶点按 X 排序 → 左/右边按 Y 排序 → 水平插值 → 中点；写 LaneWaypointConfig；SaveAssets
+    - Scene Preview：OnSceneGUI 5色小球显示 _previewPositions
+  ReviewChecklist：通过（Editor 工具，FindObjectOfType/GetComponentInChildren 在 Editor Assembly 合规）
+状态：完成
+备注：
+  Bake 预验证设计：先检查全部再写，避免写入半数数据
+
+========================================
+[2026-06-27 文档整理]
+指令：整理 ManualInstructions，覆盖 T19~T22 手动操作步骤
+操作：
+  更新 Docs/TaskBreakdown.md：T09~T18 状态改为 ✅ 完成；T19~T22 标注（手动）
+  重写 Docs/ManualInstructions.md：
+    T19 — Prefab 制作（Monster_A/B/C 结构、Bread、Explosion 可选）
+    T20 — Inspector 连线（全系统 SerializeField 赋值表格）
+          ★ 附两处 GameLoop 集成修复：
+            1. GameLoop.Start() 改为 StartGame()（避免 Game 场景空屏）
+            2. GoToMainMenu() 改为 SceneManager.LoadScene("MainMenu")
+            3. 新增 SceneLoader.cs 供 MainMenu Start 按钮调用
+          按钮连线：PauseMenu/Death/Victory/LevelTransition 各按钮 → GameLoop 公开方法
+    T21 — 球道点位烘焙（LaneCalculatorWindow 使用步骤）
+    T22 — 端到端集成测试（7条测试路径）
+状态：完成
+备注：
+  GameLoop.Start() 调用 TransitionTo(MainMenu) 但 Game.unity 无 MainMenu_Canvas 会导致空屏，此为遗漏的集成缺口
+  GoToMainMenu() 缺少 SceneManager.LoadScene 同为集成缺口，均在 T20 手动步骤中说明并提供修复代码
+
+========================================
+
+[2026-06-28 T19-T22 手动操作进行中]
+指令：启动开发会话，执行 T19-T22 手动操作
+操作：
+  T19：Prefab 制作完成（Monster_A/B/C + Bread）
+  T20 部分完成：
+    - GameLoop 集成修复 ✅（StartGame + GoToMainMenu + SceneLoader）
+    - SceneLoader.cs 创建 ✅
+    - PauseMenu_Canvas 按钮创建并连线 ✅（ContinueButton + MainMenuButton）
+    - LevelTransition_Canvas TMP Text 创建 ✅
+    - Build Settings 修复（添加 MainMenu + Game 场景，修正 GUID）
+    - UISystem 过关文本改为英文（中文字体缺失）
+  T21 部分完成：
+    - 球道 PolygonCollider2D 已设
+    - 但 LaneCalculator 算出的 Y=200-500 范围与实际场景不匹配，点位未生效
+  T22 测试进度：
+    - MainMenu → Game 场景切换 ✅
+    - 怪物生成 ✅ 但不显示（MonsterData 无 Sprite）
+    - NPE 发现：Main Camera Tag 未设为 MainCamera → LaneManager.Update NRE
+未完成：
+  - 创建 QuickWaypointGenerator（不依赖 Collider 的点位生成工具）
+  - StarterPrompt.md 移至项目根目录 ✅
+状态：进行中
+备注：多个 Bug 待修复（Camera Tag / Monster Sprite / 球道点位 / UI 参考线）
+
+========================================
+
+[2026-06-28 UI 制作 Prompt]
+指令：生成 UI 制作的手动操作 Prompt，保存到 .md 文件
+操作：创建 Docs/UI制作Prompt.md，包含 4 个 UI 界面（MainMenu / PauseMenu / LevelTransition / Victory）的完成清单和 Unity MCP 操作步骤
+状态：完成
+备注：可直接复制到新 Claude 会话使用；代码层 UI 逻辑已就位，主要工作是 Inspector 连线和视觉完善
+
+========================================
+
+[2026-06-28 UI 按钮文字修复]
+指令：修复暂停页面时看不到 leveltransition 的问题
+操作：核查 YAML 后发现所有按钮文字均为默认占位符 "Button"，逐一修正：
+  - LevelTransition 按钮: "Button" → "Continue" ✅
+  - Death_Canvas 按钮: "Button" → "Back to Main Menu" ✅
+  - Victory_Canvas 按钮: "Button" → "Back to Main Menu" ✅
+  - PauseMenu MainMenuButton: "Back to Mainmeun" → "Back to Main Menu" ✅
+状态：完成
+备注：过关界面现在清楚显示 "Level X Clear!" + "Continue" 按钮，玩家可明确知道如何进入下一关
+
+========================================
+
+[2026-06-28 调试通关快捷键]
+指令：加一个调试功能按 V 直接通关，用于检查 Victory/过关界面
+操作：
+  - GameLoop.cs 新增 DebugCompleteLevel() 公开方法
+  - GameLoop.cs 新增 HandleDebugInput() 按 V 键触发
+  - 修复了之前不小心重复 Update 方法的 bug
+状态：完成
+备注：游戏中按 V 立即通关当前关卡；第3关（最后一关）按 V 直接显示 Victory 界面
+
+========================================
+
+[2026-06-28 修复 HUD_Canvas 不可见]
+指令：进入 Level1 后 HUD_Canvas 不亮
+操作：检查 Game.unity YAML 发现所有 6 个 Canvas 的 RectTransform m_LocalScale 均为 {x:0,y:0,z:0}，子元素缩放为0不可见
+  - HUD_Canvas ✅ scale 0→1
+  - PauseMenu_Canvas ✅ scale 0→1
+  - LevelTransition_Canvas ✅ scale 0→1
+  - Death_Canvas ✅ scale 0→1
+  - Victory_Canvas ✅ scale 0→1
+  - 背景 Canvas ✅ scale 0→1
+状态：完成
+备注：根本原因是场景手动搭建时 Canvas 的 RectTransform scale 被设为 0
+
+========================================
+
+[2026-06-28 Bug 逐项排查 — Camera]
+指令：用户测试运行未见 Camera 报错，要求逐一核实 TASK_LOG/StarterPrompt 记录的 bug 是否真实存在
+操作：核查 Game.unity（Main Camera m_TagString=MainCamera 已设）+ LaneManager.cs（_mainCamera 仅在 Update 的 _needsHoverCheck && IsHoverActive 双守卫下解引用）
+状态：完成（结论：非 bug）
+备注：TASK_LOG 旧记录「Camera Tag 未设 → LaneManager NRE」作废，与用户实测一致；文档整理时删除该条
+
+========================================
+
+[2026-06-28 怪物显示 — DisplayScale]
+指令：怪物无美术不显示；用户决定手动在 SO 赋 sprite，并加一个策划可编辑的 scale factor 防止 sprite 太小
+操作：
+  - MonsterData.cs 新增 DisplayScale 字段（float，默认 1，[Min(0.01)] + Tooltip）
+  - MonsterController.ApplyScale 乘 DisplayScale（Data 为 null 时回退 1）
+  - 010_ConfigSchema.md MonsterData 表追加 DisplayScale 行
+  - DecisionLog.md 追加 [Tech] DisplayScale 决策 + Camera 非 bug 结论
+状态：完成
+备注：sprite 由策划手动赋值；DisplayScale 乘在 ScaleCurve 之上，保留透视比例
+
+========================================
+
+[2026-06-28 怪物 SO 现状核查]
+指令：用户称 SO 已赋值，要求查看并记录
+操作：读取 MonsterData_A/B/C.asset
+状态：完成
+备注：
+  - A/B/C 的 IdleSprite/HitSprite 均已赋值（Unity 内置 sprite：A/B=10907 UISprite，C=10913 Knob）
+  - TargetDoughState：A=2(Softest) B=3(Medium) C=4(Hardest)，与 ConfigSchema 一致
+  - MonsterName 全空（仅调试标签，不影响运行）
+  - 结论：sprite 非 null → 怪物看不见多半是位置/缩放问题（与「球道点位错误」bug 吻合），故加位置 debug 日志定位
+
+========================================
+
+[2026-06-28 Debug 框架 — 怪物位置/生成点日志]
+指令：每秒打印怪物位置、打印生成点到 debug 文件；要求分割 debug 区域、单布尔开关、日志单独文件夹、可记忆复用
+操作：
+  采用「内联标注可删区域」方案（用户认可，否决重框架，省手动连线）：
+  - MonsterController.cs 加 DEBUG 区域「怪物位置」：const bool DebugLogPosition + 每 1s 写 Debug/MonsterPosition.log（lane/posIndex/pos/scale）
+  - MonsterSystem.cs 加 DEBUG 区域「怪物生成点」：const bool DebugLogSpawn + 写 Debug/MonsterSpawn.log（lane/type/spawnPos）
+  - 日志路径：项目根 Debug/（Application.dataPath/../Debug，Assets 外不导入）
+  - 横幅 ╔══ DEBUG ══╗...╚══╝ 包裹，整块可删；#pragma 162 抑制关闭时警告
+  规范存入记忆：feedback_debug_convention.md（+ MEMORY.md 索引）
+状态：完成（待用户在 Unity 运行后回传日志诊断）
+备注：未建新 spec / 未改 ConfigSchema（临时脚手架，与易删除定位一致）；测试前可删 Debug/ 文件夹保持日志干净
+
+========================================
+
+[2026-06-28 分辨率独立 — 16:9 黑边]
+指令：让游戏在任何设备都固定 1920×1080 观感；用户选方案 A（黑边锁 16:9），第 1 层 CanvasScaler 已自行完成
+操作：
+  - 新建 Assets/Scripts/Core/AspectRatioEnforcer.cs（[RequireComponent(Camera)]，Awake 缓存 Camera，Update 仅在 Screen 尺寸变化时重算 Camera.rect，强制 16:9 letterbox）
+  - DecisionLog 追加 [Tech] 分辨率独立决策
+状态：完成（代码层）；待用户手动挂脚本 + 改 Canvas 渲染模式 + Player Settings
+备注：
+  待用户手动：
+  1) 主相机加 AspectRatioEnforcer，目标 1920×1080
+  2) 若要黑边同时盖住 UI → 各 Canvas 改 Screen Space - Camera 并指定主相机（否则 Overlay 下 UI 仍铺满物理屏，溢出到黑边区）
+  3) Player Settings → Resolution and Presentation → 默认 1920×1080
+  注意：单相机 rect<1 时黑边区若出现残影，需加一个 ClearFlags=Solid Black 的背景相机（depth 更低）兜底
+
+========================================
+
+[2026-06-28 怪物不可见 — 根因定位 + 相机修复（里程碑）]
+指令：怪物跑几次都看不见，要求方案
+操作：
+  读 Debug/MonsterSpawn.log + MonsterPosition.log，确认怪物坐标在像素级 (X 597~1300, Y 327~837)，逻辑正常
+  读 Game.unity：主相机为透视(orthographic:0)、FOV60、位置(0,0,-10) → 仅框住原点附近 ±7，怪物全在视野外
+  BG_Canvas 为 Screen Space - Camera、PlaneDistance=100（z≈90 远平面）→ 怪物 z=0 会渲染在背景前，不被挡
+  方案（用户手动 Inspector）：主相机改 Orthographic、Position(960,540,-10)、Size 540，1:1 框住 1920×1080 像素世界
+结果：用户执行后怪物可见（渲染链路打通，里程碑）；为看清把怪物放大约 1000 倍
+状态：完成
+备注：
+  - MonsterConfig.ScaleCurve 实际为 0.1→1.5（近/远 15 倍透视比）；绝对尺寸靠 DisplayScale/倍率补偿（内置 UI sprite 在像素世界里基准极小）
+  - 倍率应加在 MonsterData.DisplayScale 或 prefab 根节点，勿加在 _visual 子节点（ApplyScale 每帧覆盖 _visual.localScale）
+  - 下一个真问题：球道 X 挤成两堆（lane0/1≈597，lane3/4≈1297），LaneCalculator 从 PolygonCollider2D 烘焙的 X 算错（即「球道点位错误」），待修
+
+========================================
+
+[2026-06-28 修复球道点位 bug — Bake 顶点分类]
+指令：看一下球道点位 bug 并修复（用户提供了 collider 截图）
+操作：
+  读 Game.unity 确认每条 collider 恰为 4 顶点；几何正确，bug 在 Bake() 顶点分类
+  根因：原算法「按 X 排序，小的两个=左边，大的两个=右边」在倾斜透视球道上失效——
+        两个底顶点共享较小 X，被错认成左边 → 左/右边退化成上/下两条水平线 → HorizontalIntersect 遇 dy≈0 返回固定 X → 整条道 waypoint 的 X 坍缩成常数
+  修复 Assets/Editor/LaneCalculatorWindow.cs Bake()：改为「先按 Y 分上下两排，再每排内按 X 分左右」，得到两条真正倾斜的轨道线（aLeft↔bLeft / aRight↔bRight）
+  实测验证：示例道修复后中线由 X≈1015(底)→1350(顶) 正确倾斜，不再坍缩
+状态：完成（代码）；待用户重新打开 Lane Waypoint Calculator 点 Bake 重新烘焙
+备注：纯 Editor 工具算法改动，不碰 Spec/Config；AutoDistribute 的 Y 计算不受影响无需改
+
+========================================
+
+[2026-06-28 怪物 Console 日志（实时诊断不可见问题）]
+指令：重新烘焙后仍看不到怪物，要求打印 console log（生成/移动）
+操作：
+  烘焙修复已确认生效（日志显示 5 条道 X 正确分开、斜线、缩放 100~1500），判定为纯渲染/视角问题
+  在 MonsterController.cs 加 DEBUG 区域「怪物 Console 日志」(const bool DebugConsole)：
+    - 生成：Debug.Log 带 lane/type/pos/sprite名/color/sortingOrder/visualScale/active —— 直接暴露渲染问题（sprite=NULL / 透明 / 层级 / 缩放0 / 未激活）
+    - 移动：StartMoving 打印 步 N→N+1 + 起止世界坐标
+    - 到达桌子：ReachedTable 打印
+  横幅区域 + const bool 可整块删除
+状态：完成
+备注：用 console（实时）而非文件，因用户要在 Editor 里现场看；待用户 Play 后回报 Console 输出
+
+========================================
+
+[2026-06-28 Gameplay 改动 — 关卡 t=0 立即出怪]
+指令：永久改为关卡一开始就生成怪物
+操作（先 Spec/DecisionLog 后代码）：
+  - 007_LevelSystem.md：Gameplay Rules / 状态机(_spawnTimer 初值) / AC / Test 1 全部改为 t=0 立即生成
+  - DecisionLog：旧决定「一个间隔后生成」标注作废；新增 [Gameplay] t=0 立即生成决定
+  - LevelSystem.cs HandleLevelStarted：_spawnTimer = 0f → _spawnTimer = _currentLevelData.SpawnIntervalSeconds（首帧即触发 TrySpawn）
+状态：完成
+备注：之后每只仍按 SpawnIntervalSeconds 间隔；暂停冻结/Resume 续计时逻辑不受影响
+
+========================================
+
+[2026-06-29 工作区可见范围确认]
+指令：可以看到啥
+操作：读取项目根目录并确认当前可访问的工作区内容；未修改项目代码或设计。
+状态：完成
+备注：可查看与编辑工作区文件、运行终端命令并检查 Unity 项目；无法直接看到用户屏幕或 Unity Editor 当前画面，除非用户提供截图或明确要求使用可用的浏览/界面工具。
+
+========================================
+
+[2026-06-29 Unity MCP 连接状态确认]
+指令：你有链接上unity mcp吗
+操作：检查当前会话可调用的 MCP 工具，并读取项目 .mcp.json 配置。
+状态：完成
+备注：项目已配置 mcp-unity，但当前会话未暴露任何 Unity MCP 工具，因此尚未实际连接到 Unity Editor。
+
+========================================
+
+[2026-06-29 Unity MCP 重启后复查]
+指令：重启了，现在能连上了吗
+操作：重新搜索当前会话已挂载的 Unity MCP 工具。
+状态：完成
+备注：仍未发现 mcp-unity 工具，当前会话尚未连接成功。
+
+========================================
+
+[2026-06-29 Unity MCP 启动故障诊断]
+指令：检查一下吧
+操作：检查 .mcp.json、.codex/config.toml、Node 环境、Library/PackageCache、Packages/manifest.json、ProjectSettings/McpUnitySettings.json、Unity Editor.log 与 Git 历史。
+状态：完成
+备注：Node v26.1.0 可用，但两个 MCP 配置均指向已不存在的 com.gamelovers.mcp-unity 缓存入口；当前 main(c940b15) 的 manifest 未安装任何 Unity MCP 包，PackageCache 也无对应包，因此服务无法启动。历史提交 28c9959 曾安装 CoplayDev Unity MCP，但该提交不在当前 main 上。
+
+========================================
+
+[2026-06-29 安装 CoplayDev Unity MCP]
+指令：使用 CoplayDev/unity-mcp
+操作：读取 CodingRules 与 ReviewChecklist；按官方 Git URL 向 Packages/manifest.json 添加 com.coplaydev.unity-mcp；将 .codex/config.toml 和本地 .mcp.json 从失效的旧 Node 入口切换为 http://localhost:8080/mcp；在 DecisionLog 记录 Tech 决定；验证 manifest JSON 合法并检查 Unity 包缓存、Editor 日志与端口。
+状态：进行中
+备注：配置文件已完成；当前打开的 Unity 尚未重新解析 manifest，PackageCache 中仍无新包且 8080 未监听。需在 Unity 中触发 Package Manager 导入并完成 Window → MCP for Unity 设置向导，随后重启 Codex 再验证工具挂载。Review Checklist：本 Task 未修改 C#、EventBus、SO、Gameplay 或运行时系统，相关条目均 N/A；配置 JSON 校验通过。
+
+========================================
+
+[2026-06-29 CoplayDev Unity MCP 下载失败诊断]
+指令：反馈 Unity Package Manager 无法连接 github.com:443
+操作：检查 Git/环境代理、DNS、沙箱外 git ls-remote 直连及本机 Unity/Git/项目缓存。
+状态：阻塞
+备注：DNS 可解析 github.com，但未配置代理，沙箱外访问 GitHub 443 同样约 15.5 秒超时；本机无 CoplayDev/unity-mcp 缓存可离线恢复。需先启用可访问 GitHub 的网络/VPN，或提供本地下载好的包目录/ZIP。
+
+========================================
+
+[2026-06-29 配置 Unity MCP 下载代理]
+指令：使用本地代理 127.0.0.1:6518
+操作：设置 Git 全局 http.proxy/https.proxy 为 http://127.0.0.1:6518；通过 git ls-remote 成功访问 CoplayDev/unity-mcp；将 Unity MCP 依赖锁定至稳定标签 v9.7.3；设置当前 Windows 用户 HTTP_PROXY/HTTPS_PROXY。
+状态：进行中
+备注：GitHub 连接已验证成功。当前 Unity/UnityPackageManager 进程启动早于环境变量配置，仍使用旧环境并直连失败；需重启 Unity 后重新解析 Packages/manifest.json，再检查包导入与 8080 MCP 服务。
+
+========================================
+
+[2026-06-29 CoplayDev Unity MCP 安装后连接复查]
+指令：现在连上了吗
+操作：检查 PackageCache、packages-lock、Unity 导入日志、8080 端口、Codex 用户/项目配置及当前会话 Unity 工具。
+状态：进行中
+备注：v9.7.3 已成功解析并完整导入，Codex 用户配置已由插件刷新为 http://127.0.0.1:8080/mcp；但 8080 尚未监听、无 MCP server 进程，当前会话也未挂载 Unity 工具。Unity 日志仅显示 Setup Done/Dismissed，未显示服务器启动；需在 Window → MCP for Unity 中启动服务器。
+
+========================================
+
+[2026-06-29 Unity MCP 服务再次复查]
+指令：连上了吗？
+操作：实时检查 127.0.0.1:8080、MCP server 进程及 Unity Editor MCP 日志。
+状态：进行中
+备注：8080 仍未监听，未发现 mcp-for-unity 服务进程，日志无服务器启动记录，因此尚未连接。
+
+========================================
+
+[2026-06-29 安装 uv 并启动 Unity MCP HTTP 服务]
+指令：反馈 uvx 未安装导致 Local HTTP server 无法启动
+操作：通过 winget 安装官方 astral-sh.uv 0.11.25；使用 uvx 下载并启动 mcpforunityserver==9.7.3，传输方式为 HTTP，地址 http://127.0.0.1:8080/mcp；检查端口、进程和服务日志。
+状态：进行中
+备注：8080 已监听，FastMCP/Uvicorn 服务启动成功；当前 Codex 会话不会热加载新 MCP server，Unity 工具仍未挂载，需重启 Codex 后做最终工具调用验证。
+
+========================================
