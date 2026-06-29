@@ -1,5 +1,7 @@
 # 009 UISystem Spec
 
+> 2026-06-29 Ingredient Texture Animation Revision：RatioBar 的面粉区与水区分别使用 6 帧代码驱动 Sprite 翻页。常态 6 fps 循环；有效左键加粉时面粉区触发 0.2 秒快速翻页与 1.1 倍脉冲；有效右键按下时水区触发同样脉冲，持续按住期间以 3 倍速度翻页，松开恢复常速。动画触发复用 DoughSystem 的输入有效性门控，暂停、烤制及 DoughState=None 时不响应；所有计时使用 Time.deltaTime。
+
 > 2026-06-29 RatioBar Visual Revision：比例条使用唯一绿色竖线作为当前比例 Indicator；绿线左侧显示面粉纹理，右侧显示水纹理，两侧区域随 Indicator 移动动态改变宽度并限制在比例条范围内。三条原 `RefLine_*` 视觉对象改作 Softest / Medium / Hardest 三种面包制作成功区间。
 
 > 2026-06-29 Gameplay Revision：烤制进度条按本次锁定的分档 CookDuration 归一化；完成前、完美窗口、烤焦分别显示不同状态。比例进入有效容错区间时显示对应面包名称与对勾。场景和 Canvas 结构不变。
@@ -92,6 +94,13 @@ _UI/
   - Hardest 中心（默认 0.5）± ToleranceHalfWidth
 - 参考线颜色与对应怪物颜色一致（策划在 Inspector 中配置）
 - DoughState = None 时：指示器隐藏（面团飞出中）
+
+**纹理翻页动画：**
+- 面粉区和水区各配置 6 张独立 Sprite，由通用 `SpriteFlipbook` 组件以 6 fps 常态循环。
+- 有效左键按下：面粉区以 30 fps 快速翻页 0.2 秒，并由 1.1 倍缩放回弹至原始缩放。
+- 有效右键按下：水区触发相同快速翻页与缩放脉冲；持续按住时以基础速度的 3 倍播放，松开恢复。
+- `RatioBar` 仅在 `DoughSystem.IsInputActive()` 为 true 时转发输入反馈，保证表现与玩法输入门控一致。
+- DoughState=None 时两个纹理区域随现有 RatioBar 逻辑隐藏，组件禁用期间停止计时。
 
 **弹性动画：**
 每帧：`_displayedRatio = Mathf.Lerp(_displayedRatio, DoughSystem.GetCurrentRatio(), ElasticSpeed * Time.deltaTime)`
@@ -231,6 +240,9 @@ GameLoop 在发布 OnGameStateChanged(LEVEL_TRANSITION) 前已通知 LevelSystem
 - [ ] Given 右键加水，When 比例向左移动，Then 比例条指示器弹性跟随（慢于比例实际变化）
 - [ ] Given 左键加粉，When 比例向右移动，Then 指示器弹性跟随
 - [ ] Given DoughState = None（面团飞出），Then 比例条指示器隐藏
+- [ ] Given 有效左键点击，Then 面粉纹理快速翻页 0.2 秒并完成 1.1x→1.0x 脉冲
+- [ ] Given 有效右键按住，Then 水纹理先脉冲并持续 3 倍速翻页，松开后恢复 6 fps
+- [ ] Given 暂停、烤制或 DoughState=None，When 点击鼠标，Then 面粉与水纹理不触发操作反馈
 - [ ] Given OnThrowCompleted，Then 指示器 snap 回 InitialRatio 对应位置，无弹性
 - [ ] Given BakingState = Cooked，Then BakingIndicator 显示绿色，进度条填充至 Cooked 区间
 - [ ] Given OnMonsterReachedTable，Then TableHPBar fillAmount 立即减少

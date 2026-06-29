@@ -17,6 +17,8 @@ namespace GWBGameJam
         [SerializeField] private Image _flourTextureImage;
         [SerializeField] private RectTransform _waterTextureRect;
         [SerializeField] private Image _waterTextureImage;
+        [SerializeField] private SpriteFlipbook _flourFlipbook;
+        [SerializeField] private SpriteFlipbook _waterFlipbook;
         [SerializeField] private RectTransform _softestRefLine;
         [SerializeField] private RectTransform _mediumRefLine;
         [SerializeField] private RectTransform _hardestRefLine;
@@ -42,6 +44,8 @@ namespace GWBGameJam
             if (_flourTextureImage == null) { Debug.LogError("[RatioBar] FlourTextureImage is not assigned"); _hasConfigError = true; }
             if (_waterTextureRect == null)  { Debug.LogError("[RatioBar] WaterTextureRect is not assigned");  _hasConfigError = true; }
             if (_waterTextureImage == null) { Debug.LogError("[RatioBar] WaterTextureImage is not assigned"); _hasConfigError = true; }
+            if (_flourFlipbook == null) { Debug.LogError("[RatioBar] FlourFlipbook 未赋值"); _hasConfigError = true; }
+            if (_waterFlipbook == null) { Debug.LogError("[RatioBar] WaterFlipbook 未赋值"); _hasConfigError = true; }
 
             if (!_hasConfigError)
                 ConfigureVisualOrder();
@@ -63,6 +67,8 @@ namespace GWBGameJam
         {
             if (_hasConfigError) return;
 
+            UpdateIngredientAnimationInput();
+
             if (!_refLinesInitialized && _barRect.rect.width > 0f)
             {
                 InitRefLines();
@@ -78,6 +84,23 @@ namespace GWBGameJam
             float indicatorX = UpdateIndicatorPosition(_displayedRatio);
             UpdateTextureAreas(indicatorX);
             UpdateDoughStateFeedback();
+        }
+
+        private void UpdateIngredientAnimationInput()
+        {
+            if (!_doughSystem.IsInputActive())
+            {
+                _waterFlipbook.SetSpeedMultiplier(1f);
+                return;
+            }
+
+            if (Input.GetMouseButtonDown(0))
+                _flourFlipbook.TriggerPulse();
+
+            if (Input.GetMouseButtonDown(1))
+                _waterFlipbook.TriggerPulse();
+
+            _waterFlipbook.SetSpeedMultiplier(Input.GetMouseButton(1) ? 3f : 1f);
         }
 
         private void ConfigureVisualOrder()
