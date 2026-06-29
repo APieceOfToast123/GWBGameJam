@@ -19,6 +19,7 @@ namespace GWBGameJam
         [SerializeField] private SpriteFlipbook _waterFlipbook;
         [SerializeField] private TMP_Text _doughNameText;
         [SerializeField] private GameObject _validCheckmark;
+        [SerializeField, Min(0f)] private float _textureLength = 100f;
 
         private bool _hasConfigError;
         private RectTransform _barRect;
@@ -109,18 +110,17 @@ namespace GWBGameJam
 
         private void UpdateTextureAreas(float indicatorX)
         {
-            float halfWidth = _barRect.rect.width * 0.5f;
-            SetTextureArea(_flourTextureRect, -halfWidth, indicatorX);
-            SetTextureArea(_waterTextureRect, indicatorX, halfWidth);
+            // 面粉块贴指针左侧、水块贴右侧，等长固定，随指针一起移动
+            float half = _textureLength * 0.5f;
+            SetTextureBlock(_flourTextureRect, indicatorX - half);
+            SetTextureBlock(_waterTextureRect, indicatorX + half);
         }
 
-        private static void SetTextureArea(RectTransform rect, float leftX, float rightX)
+        private void SetTextureBlock(RectTransform rect, float centerX)
         {
             if (rect == null) return;
-
-            float width = Mathf.Max(0f, rightX - leftX);
-            rect.anchoredPosition = new Vector2((leftX + rightX) * 0.5f, rect.anchoredPosition.y);
-            rect.sizeDelta = new Vector2(width, rect.sizeDelta.y);
+            rect.anchoredPosition = new Vector2(centerX, rect.anchoredPosition.y);
+            rect.sizeDelta = new Vector2(_textureLength, rect.sizeDelta.y);
         }
     }
 }

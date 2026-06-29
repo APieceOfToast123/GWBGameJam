@@ -106,8 +106,7 @@ namespace GWBGameJam
         [Test]
         public void CookedBreadWithMatchingRatioHitsMonster()
         {
-            var boundaryConfig = CreateAsset<DoughStateBoundaryConfig>();
-            var throwSystem = CreateConfiguredThrowSystem(boundaryConfig, BakingState.Cooked, boundaryConfig.GetCenterRatio(DoughState.Medium));
+            var throwSystem = CreateConfiguredThrowSystem(BakingState.Cooked, DoughState.Medium);
             var monster = CreateMonster(DoughState.Medium);
 
             var result = (ThrowResult)InvokePrivate(throwSystem, "DetermineResult", monster);
@@ -119,8 +118,7 @@ namespace GWBGameJam
         [TestCase(BakingState.Burnt)]
         public void NonCookedBreadCannotHitEvenWithMatchingRatio(BakingState bakingState)
         {
-            var boundaryConfig = CreateAsset<DoughStateBoundaryConfig>();
-            var throwSystem = CreateConfiguredThrowSystem(boundaryConfig, bakingState, boundaryConfig.GetCenterRatio(DoughState.Medium));
+            var throwSystem = CreateConfiguredThrowSystem(bakingState, DoughState.Medium);
             var monster = CreateMonster(DoughState.Medium);
 
             var result = (ThrowResult)InvokePrivate(throwSystem, "DetermineResult", monster);
@@ -131,9 +129,7 @@ namespace GWBGameJam
         [Test]
         public void CookedBreadWithWrongRatioDoesNotHitMonster()
         {
-            var boundaryConfig = CreateAsset<DoughStateBoundaryConfig>();
-            float wrongRatio = boundaryConfig.GetCenterRatio(DoughState.Medium) + boundaryConfig.ToleranceHalfWidth + 0.01f;
-            var throwSystem = CreateConfiguredThrowSystem(boundaryConfig, BakingState.Cooked, wrongRatio);
+            var throwSystem = CreateConfiguredThrowSystem(BakingState.Cooked, DoughState.Softest);
             var monster = CreateMonster(DoughState.Medium);
 
             var result = (ThrowResult)InvokePrivate(throwSystem, "DetermineResult", monster);
@@ -144,8 +140,7 @@ namespace GWBGameJam
         [Test]
         public void EmptyLaneStaysEmptyRegardlessOfBakingState()
         {
-            var boundaryConfig = CreateAsset<DoughStateBoundaryConfig>();
-            var throwSystem = CreateConfiguredThrowSystem(boundaryConfig, BakingState.Burnt, boundaryConfig.GetCenterRatio(DoughState.Medium));
+            var throwSystem = CreateConfiguredThrowSystem(BakingState.Burnt, DoughState.Medium);
 
             var result = (ThrowResult)InvokePrivate(throwSystem, "DetermineResult", (object)null);
 
@@ -156,10 +151,7 @@ namespace GWBGameJam
         public void ProjectilePathFollowsLaneAfterEntryBlend()
         {
             var throwConfig = CreateAsset<ThrowConfig>();
-            var throwSystem = CreateConfiguredThrowSystem(
-                CreateAsset<DoughStateBoundaryConfig>(),
-                BakingState.Cooked,
-                1f);
+            var throwSystem = CreateConfiguredThrowSystem(BakingState.Cooked, DoughState.Medium);
 
             SetPrivateField(throwSystem, "_config", throwConfig);
             SetPrivateField(throwSystem, "_startPos", Vector2.zero);
@@ -175,12 +167,11 @@ namespace GWBGameJam
             Assert.Greater(lanePosition.y, entryPosition.y);
         }
 
-        private ThrowSystem CreateConfiguredThrowSystem(DoughStateBoundaryConfig boundaryConfig, BakingState bakingState, float ratio)
+        private ThrowSystem CreateConfiguredThrowSystem(BakingState bakingState, DoughState capturedState)
         {
             var throwSystem = CreateComponent<ThrowSystem>("ThrowSystem");
-            SetPrivateField(throwSystem, "_boundaryConfig", boundaryConfig);
             SetPrivateField(throwSystem, "_capturedBakingState", bakingState);
-            SetPrivateField(throwSystem, "_capturedRatio", ratio);
+            SetPrivateField(throwSystem, "_capturedDoughState", capturedState);
             return throwSystem;
         }
 

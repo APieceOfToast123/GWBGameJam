@@ -15,6 +15,14 @@ namespace GWBGameJam
         [SerializeField] private Transform _throwOrigin;
         [SerializeField] private GameObject _projectilePrefab;
         [SerializeField] private GameObject _explosionPrefab;
+        [SerializeField] private BreadSprite[] _breadSprites;
+
+        [System.Serializable]
+        private struct BreadSprite
+        {
+            public DoughState State;
+            public Sprite Sprite;
+        }
 
         private DoughState _capturedDoughState;
         private BakingState _capturedBakingState;
@@ -91,6 +99,7 @@ namespace GWBGameJam
             _hasLaneEntryPos = _laneManager.TryGetWaypoint(_targetLaneIndex, laneEntryIndex, out _laneEntryPos);
             _flightTimer = 0f;
             _activeProjectile = Instantiate(_projectilePrefab, _startPos, Quaternion.identity);
+            ApplyBreadSprite(_activeProjectile, _capturedDoughState);
             _inFlight = true;
             EventBus<OnThrowStarted>.Publish(new OnThrowStarted(_targetLaneIndex));
         }
@@ -180,6 +189,18 @@ namespace GWBGameJam
             return _capturedDoughState == monster.Data.TargetDoughState
                 ? ThrowResult.Hit
                 : ThrowResult.WrongRatio;
+        }
+
+        private void ApplyBreadSprite(GameObject projectile, DoughState state)
+        {
+            if (_breadSprites == null || projectile == null) return;
+            if (!projectile.TryGetComponent(out SpriteRenderer sr)) return;
+            for (int i = 0; i < _breadSprites.Length; i++)
+                if (_breadSprites[i].State == state && _breadSprites[i].Sprite != null)
+                {
+                    sr.sprite = _breadSprites[i].Sprite;
+                    return;
+                }
         }
 
         private void HandleGameStateChanged(OnGameStateChanged e)
