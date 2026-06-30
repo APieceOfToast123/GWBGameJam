@@ -4,6 +4,10 @@
 
 > 2026-06-29 Gameplay Revision：面包到达时读取目标球道当前怪物快照，最多处理 `MaxMonstersPerLane` 只。Cooked 面包分别对每只怪物执行比例判定并击杀所有匹配者；未匹配者保留。新增 PartialHit 与 WrongBake 结果。投射物视觉路径改为先进入目标球道底部，再沿球道中心线向前飞行。本文旧版单目标命中描述由本修订覆盖。
 
+> 2026-06-30 Projectile Sprite Revision：ThrowSystem 的 `_breadSprites` 必须配置 TooSoft / Softest / Medium / Hardest / TooHard 五种 DoughState 对应 Sprite。投掷时使用捕获到的 DoughState 设置投射物 SpriteRenderer，避免投射物图片与实际面包种类不一致；缺失、重复或空 Sprite 在 Awake 中输出错误。
+
+> 2026-06-30 Projectile Prefab Revision：`ProjectilePrefab` 引用 `BreadProjectile` 组件而非裸 GameObject。`BreadProjectile` 通过 Inspector 持有 SpriteRenderer 引用并暴露 `SetSprite`，避免 ThrowSystem 在投掷时动态取组件。
+
 ### Revision Acceptance Criteria
 
 - [ ] 同道两只同类型怪物均匹配时，一次投掷击杀两只并生成两个爆炸
@@ -12,6 +16,7 @@
 - [ ] Cooked 但无任何比例匹配时结果 WrongRatio
 - [ ] 空道结果 EmptyLane
 - [ ] 投射物从 ThrowOrigin 发出后先贴到目标 lane 底部，然后沿该 lane 中心线向前飞行
+- [ ] 投掷 TooSoft / Softest / Medium / Hardest / TooHard 时，投射物 Sprite 与捕获到的 DoughState 配置一致
 
 | 字段 | 内容 |
 |------|------|

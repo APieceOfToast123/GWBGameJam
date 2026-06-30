@@ -102,9 +102,11 @@ namespace GWBGameJam
         private void UpdateTextureAreas(float indicatorX)
         {
             float halfWidth = _textureBoundsRect.rect.width * 0.5f;
-            float left = -halfWidth;
-            float right = halfWidth;
-            float clampedX = Mathf.Clamp(indicatorX, left, right);
+            float innerPadding = Mathf.Min(_doughSystem.GetBarInnerPadding(), halfWidth);
+            float left = -halfWidth + innerPadding;
+            float right = halfWidth - innerPadding;
+            float lineHalfWidth = Mathf.Min(_doughSystem.GetIndicatorLineHalfWidth(), (right - left) * 0.5f);
+            float clampedX = Mathf.Clamp(indicatorX, left + lineHalfWidth, right - lineHalfWidth);
 
             SetTextureSpan(_flourTextureRect, left, clampedX);
             SetTextureSpan(_waterTextureRect, clampedX, right);

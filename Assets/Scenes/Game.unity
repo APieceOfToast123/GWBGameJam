@@ -219,6 +219,8 @@ MonoBehaviour:
   _config: {fileID: 11400000, guid: 932fe309def71b942a23612774b727fe, type: 2}
   _barRect: {fileID: 2050899660}
   _indicatorRect: {fileID: 1821812484}
+  _barInnerPadding: 32
+  _indicatorLineHalfWidth: 10
   _zones:
   - {fileID: 1235938640}
   - {fileID: 1089361008}
@@ -6670,9 +6672,19 @@ MonoBehaviour:
   _laneManager: {fileID: 107010997}
   _monsterConfig: {fileID: 11400000, guid: 51f0cbe773c13944b9c6ca07713ca68c, type: 2}
   _throwOrigin: {fileID: 1240508508}
-  _projectilePrefab: {fileID: 9004783077812350814, guid: b081415f22578f0429c90ec811a1ca0c, type: 3}
+  _projectilePrefab: {fileID: 930200101, guid: b081415f22578f0429c90ec811a1ca0c, type: 3}
   _explosionPrefab: {fileID: 3919512903383929133, guid: 7da1c2615f38bdd4d8479ea014883382, type: 3}
-  _breadSprites: []
+  _breadSprites:
+  - State: 1
+    Sprite: {fileID: 21300000, guid: bb1ead4672b722a41ba9d44bf7754efd, type: 3}
+  - State: 2
+    Sprite: {fileID: 21300000, guid: 82def7cf4a8058c4eb09d7bc9b19b5db, type: 3}
+  - State: 3
+    Sprite: {fileID: 21300000, guid: bbca010aa0d2c4d40a18447f4cfce6fe, type: 3}
+  - State: 4
+    Sprite: {fileID: 21300000, guid: a79d21e9bef3c154eb22b6994ab94c1f, type: 3}
+  - State: 5
+    Sprite: {fileID: 21300000, guid: 45913409023777945a8bea87a6fb1685, type: 3}
 --- !u!1 &2043686015
 GameObject:
   m_ObjectHideFlags: 0

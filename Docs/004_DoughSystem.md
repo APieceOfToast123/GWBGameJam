@@ -17,6 +17,8 @@
 
 > 2026-06-30 Input Feedback Revision：有效左键加粉时发布 `OnIngredientUsed(Flour)`；有效右键按下并生成本次水速倍率时发布 `OnIngredientUsed(Water)`。右键长按期间不每帧重复发布，确保水壶动画每次按下只播放一遍。
 
+> 2026-06-30 Ratio Bar Inner Bounds Revision：DoughSystem 持有 `BarInnerPadding` 与 `IndicatorLineHalfWidth`，用于把 Indicator 的活动范围收进水粉板图片内框。Indicator 中心不会移动到 `BarInnerPadding + 可见绿线半宽` 之外，避免绿线被外框挡住；RatioBar 读取同一内边距和绿线半宽来裁切面粉/水纹理。Indicator RectTransform 宽度仍用于 DoughZone 重叠判定，不作为边界线宽。
+
 > 2026-06-29 Visual 备注：桌上面团的"揉制长大"表现由独立 UI 组件 `DoughVisual` 负责（详见 009_UISystem），**纯视觉、不影响 DoughSystem 逻辑**（ratio/命中判定不变）。面团大小不进入任何判定。
 
 ### Revision Acceptance Criteria

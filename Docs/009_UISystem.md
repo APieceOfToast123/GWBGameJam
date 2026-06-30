@@ -2,7 +2,7 @@
 
 > 2026-06-29 RatioBar Zone-Selection Overhaul：比例条改为「滑块对位」机制。指示器位置由 DoughSystem 的归一化 `_pos` 驱动（DoughSystem 每帧设置指示器 anchoredPosition）。策划在比例条上**画 3 个绿色 UI Image 作为目标区域**，每个挂 `DoughZone` 组件（`[SerializeField] DoughState State`，仅 Softest/Medium/Hardest）。判定用 **RectTransform 重叠（非物理 Collider）**：指示器与哪个区域重叠最多就做哪种面包，都不重叠则失败。原 `RefLine_*`（按阈值自动定位的参考线）逻辑**移除**——由设计师手画的 DoughZone 取代。RatioBar 退为纯视觉：读 `GetCurrentDoughState()` 驱动面包名/对勾、读指示器位置定位面粉/水纹理、flipbook 输入反馈仍由 `IsInputActive()` 门控。
 
-> 2026-06-30 RatioBar Texture Fit Revision：面粉/水纹理不再使用固定长度 `_textureLength`。RatioBar 以两张纹理共同父节点 `workspace` 为裁切边界：面粉纹理从左边界贴到绿色 Indicator，水纹理从 Indicator 贴到右边界，并随 Indicator 自动缩放宽度。
+> 2026-06-30 RatioBar Texture Fit Revision：面粉/水纹理不再使用固定长度 `_textureLength`。RatioBar 以两张纹理共同父节点 `workspace` 为裁切边界，并读取 DoughSystem 的 `BarInnerPadding` 与 `IndicatorLineHalfWidth`：面粉纹理从内框左边界延伸到绿色 Indicator 中心，水纹理从 Indicator 中心延伸到内框右边界，由 Indicator 覆盖接缝，并随 Indicator 自动缩放宽度。`IndicatorLineHalfWidth` 只代表可见绿线边界，不等同于整张透明 PNG 的 RectTransform 宽度。
 
 > 2026-06-30 Ingredient Tool Feedback Revision：水壶与面粉袋使用独立 `IngredientToolAnimator` 监听 `OnIngredientUsed`。有效左键加粉时面粉袋播放一次帧动画并缩放脉冲；有效右键按下时水壶播放一次帧动画并缩放脉冲。旧 `SpriteFlipbook` 场景组件停用，仅保留帧资源引用。
 

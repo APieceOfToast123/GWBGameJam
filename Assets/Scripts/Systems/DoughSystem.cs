@@ -7,6 +7,8 @@ namespace GWBGameJam
         [SerializeField] private DoughConfig _config;
         [SerializeField] private RectTransform _barRect;
         [SerializeField] private RectTransform _indicatorRect;
+        [SerializeField, Min(0f)] private float _barInnerPadding = 32f;
+        [SerializeField, Min(0f)] private float _indicatorLineHalfWidth = 10f;
         [SerializeField] private DoughZone[] _zones;
 
         private float _pos;
@@ -26,6 +28,8 @@ namespace GWBGameJam
         public DoughState GetCurrentDoughState() => _currentDoughState;
         public bool IsInputActive() => CanProcessInput;
         public float GetNormalizedPos() => _pos;
+        public float GetBarInnerPadding() => _barInnerPadding;
+        public float GetIndicatorLineHalfWidth() => _indicatorLineHalfWidth;
 
         private void Awake()
         {
@@ -40,7 +44,41 @@ namespace GWBGameJam
             if (_indicatorRect == null) { Debug.LogError("[DoughSystem] IndicatorRect 未赋值");  _hasConfigError = true; }
             if (_zones == null || _zones.Length == 0) { Debug.LogError("[DoughSystem] Zones 未配置"); _hasConfigError = true; }
             if (!_hasConfigError)
+            {
                 _config.Validate();
+                ValidateBarInnerPadding();
+                ValidateIndicatorLineHalfWidth();
+            }
+        }
+
+        private void ValidateBarInnerPadding()
+        {
+            if (_barInnerPadding < 0f)
+            {
+                Debug.LogError("[DoughSystem] BarInnerPadding 不能小于 0，已强制设为 0");
+                _barInnerPadding = 0f;
+            }
+
+            float maxPadding = Mathf.Max(0f, _barRect.rect.width * 0.5f - _indicatorLineHalfWidth);
+            if (_barInnerPadding <= maxPadding) return;
+
+            Debug.LogError("[DoughSystem] BarInnerPadding 过大，已限制到绿线不会超出比例条的范围");
+            _barInnerPadding = maxPadding;
+        }
+
+        private void ValidateIndicatorLineHalfWidth()
+        {
+            if (_indicatorLineHalfWidth < 0f)
+            {
+                Debug.LogError("[DoughSystem] IndicatorLineHalfWidth 不能小于 0，已强制设为 0");
+                _indicatorLineHalfWidth = 0f;
+            }
+
+            float maxHalfWidth = Mathf.Max(0f, _barRect.rect.width * 0.5f - _barInnerPadding);
+            if (_indicatorLineHalfWidth <= maxHalfWidth) return;
+
+            Debug.LogError("[DoughSystem] IndicatorLineHalfWidth 过大，已限制到比例条内框范围内");
+            _indicatorLineHalfWidth = maxHalfWidth;
         }
 
         private void OnEnable()
@@ -89,9 +127,15 @@ namespace GWBGameJam
 
         private void MoveIndicator()
         {
-            float halfWidth = _barRect.rect.width * 0.5f;
+            float halfWidth = GetUsableHalfWidth();
             float x = Mathf.Lerp(-halfWidth, halfWidth, _pos);
             _indicatorRect.anchoredPosition = new Vector2(x, _indicatorRect.anchoredPosition.y);
+        }
+
+        private float GetUsableHalfWidth()
+        {
+            float halfWidth = _barRect.rect.width * 0.5f;
+            return Mathf.Max(0f, halfWidth - _barInnerPadding - _indicatorLineHalfWidth);
         }
 
         private void DeriveAndPublishState()

@@ -6,6 +6,14 @@ namespace GWBGameJam
     public class ThrowSystem : MonoBehaviour
     {
         private const float LaneEntryBlendTime = 0.25f;
+        private static readonly DoughState[] RequiredBreadStates =
+        {
+            DoughState.TooSoft,
+            DoughState.Softest,
+            DoughState.Medium,
+            DoughState.Hardest,
+            DoughState.TooHard
+        };
 
         [SerializeField] private ThrowConfig _config;
         [SerializeField] private DoughSystem _doughSystem;
@@ -13,7 +21,7 @@ namespace GWBGameJam
         [SerializeField] private LaneManager _laneManager;
         [SerializeField] private MonsterConfig _monsterConfig;
         [SerializeField] private Transform _throwOrigin;
-        [SerializeField] private GameObject _projectilePrefab;
+        [SerializeField] private BreadProjectile _projectilePrefab;
         [SerializeField] private GameObject _explosionPrefab;
         [SerializeField] private BreadSprite[] _breadSprites;
 
@@ -31,7 +39,7 @@ namespace GWBGameJam
         private Vector2 _targetPos;
         private int _targetLaneIndex;
         private float _flightTimer;
-        private GameObject _activeProjectile;
+        private BreadProjectile _activeProjectile;
         private bool _inFlight;
         private bool _isPlayingState;
         private bool _hasLaneEntryPos;
@@ -50,6 +58,33 @@ namespace GWBGameJam
             if (_projectilePrefab == null) { Debug.LogError("[ThrowSystem] ProjectilePrefab 未赋值"); _hasConfigError = true; }
             if (_explosionPrefab == null)
                 Debug.LogWarning("[ThrowSystem] ExplosionPrefab 未赋值，命中时无爆炸特效");
+            ValidateBreadSprites();
+        }
+
+        private void ValidateBreadSprites()
+        {
+            if (_breadSprites == null || _breadSprites.Length == 0)
+            {
+                Debug.LogError("[ThrowSystem] BreadSprites 未配置，投射物会使用 Prefab 默认图片");
+                return;
+            }
+
+            for (int i = 0; i < RequiredBreadStates.Length; i++)
+            {
+                DoughState state = RequiredBreadStates[i];
+                if (!HasBreadSprite(state))
+                    Debug.LogError($"[ThrowSystem] BreadSprites 缺少 {state} 对应图片");
+            }
+
+            for (int i = 0; i < _breadSprites.Length; i++)
+            {
+                if (_breadSprites[i].Sprite == null)
+                    Debug.LogError($"[ThrowSystem] BreadSprites 第 {i} 项 Sprite 为空");
+
+                for (int j = i + 1; j < _breadSprites.Length; j++)
+                    if (_breadSprites[i].State == _breadSprites[j].State)
+                        Debug.LogError($"[ThrowSystem] BreadSprites 存在重复状态 {_breadSprites[i].State}");
+            }
         }
 
         private void OnEnable()
@@ -63,7 +98,7 @@ namespace GWBGameJam
             EventBus<OnThrowRequested>.Unsubscribe(HandleThrowRequested);
             EventBus<OnGameStateChanged>.Unsubscribe(HandleGameStateChanged);
             if (_activeProjectile != null)
-                Destroy(_activeProjectile);
+                Destroy(_activeProjectile.gameObject);
         }
 
         private void Update()
@@ -176,7 +211,7 @@ namespace GWBGameJam
 
             if (_activeProjectile != null)
             {
-                Destroy(_activeProjectile);
+                Destroy(_activeProjectile.gameObject);
                 _activeProjectile = null;
             }
         }
@@ -191,16 +226,36 @@ namespace GWBGameJam
                 : ThrowResult.WrongRatio;
         }
 
-        private void ApplyBreadSprite(GameObject projectile, DoughState state)
+        private void ApplyBreadSprite(BreadProjectile projectile, DoughState state)
         {
-            if (_breadSprites == null || projectile == null) return;
-            if (!projectile.TryGetComponent(out SpriteRenderer sr)) return;
+            if (projectile == null) return;
+
+            if (TryGetBreadSprite(state, out Sprite sprite))
+                projectile.SetSprite(sprite);
+            else
+                Debug.LogError($"[ThrowSystem] 未找到 {state} 对应投射物图片，保留 Prefab 默认图片");
+        }
+
+        private bool HasBreadSprite(DoughState state)
+        {
+            return TryGetBreadSprite(state, out _);
+        }
+
+        private bool TryGetBreadSprite(DoughState state, out Sprite sprite)
+        {
+            sprite = null;
+            if (_breadSprites == null) return false;
+
             for (int i = 0; i < _breadSprites.Length; i++)
-                if (_breadSprites[i].State == state && _breadSprites[i].Sprite != null)
-                {
-                    sr.sprite = _breadSprites[i].Sprite;
-                    return;
-                }
+            {
+                if (_breadSprites[i].State != state || _breadSprites[i].Sprite == null)
+                    continue;
+
+                sprite = _breadSprites[i].Sprite;
+                return true;
+            }
+
+            return false;
         }
 
         private void HandleGameStateChanged(OnGameStateChanged e)

@@ -4,6 +4,8 @@
 
 > 2026-06-30 Lane Highlight Calibration：`LaneHighlight_2` 保持 0 度作为中心基准；`LaneHighlight_0/4` 分别向画面中心旋转约 10 度，`LaneHighlight_1/3` 分别向外旋转约 7 度。四条非中心轨道的覆盖图尺寸略放大，优先保证高亮图覆盖整条背景轨道。
 
+> 2026-06-30 Perspective Hover Revision：烤制阶段的鼠标判定不再依赖 Lane PolygonCollider2D 的窄区域。`LaneManager` 在 BakingState 非 Idle 时每帧把鼠标屏幕坐标转换到世界坐标，并选择距离 5 条 LaneWaypoint 中心线最近的轨道；判定区会覆盖更大区域，同时边界跟随轨道透视走势。
+
 | 字段 | 内容 |
 |------|------|
 | Version | 1.0 |
@@ -215,7 +217,7 @@ _World/Lanes/
 ## Acceptance Criteria
 
 - [ ] Given PLAYING 且 BakingState = Idle（未烤制），When 鼠标移入 Lane_2，Then 无任何视觉变化（球道不高亮）
-- [ ] Given PLAYING 且 BakingState = Cooked（烤制中），When 鼠标移入 Lane_2，Then Lane_2 显示 HoveredSprite，Visual/UiVisual 节点 Scale = HoverScaleMultiplier，其余4条球道保持 NormalSprite 或隐藏状态
+- [ ] Given PLAYING 且 BakingState = Cooked（烤制中），When 鼠标距离 Lane_2 的 LaneWaypoint 中心线最近，Then Lane_2 显示 HoveredSprite，Visual/UiVisual 节点 Scale = HoverScaleMultiplier，其余4条球道保持 NormalSprite 或隐藏状态
 - [ ] Given Lane_2 处于 Hovered，When 鼠标移入 Lane_3，Then Lane_2 恢复 Normal，Lane_3 变为 Hovered，广播 OnLaneHoverChanged(3)
 - [ ] Given 鼠标在任意球道上，When 按 Esc 暂停，Then 所有球道立即恢复 Normal，广播 OnLaneHoverChanged(-1)
 - [ ] Given PAUSED，When 鼠标移过球道，Then 无任何视觉变化

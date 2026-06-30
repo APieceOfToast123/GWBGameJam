@@ -26,7 +26,6 @@ namespace GWBGameJam
         private bool _isPlayingState;
         private bool _isBakingActive;
         private bool _hasConfigError;
-        private bool _needsHoverCheck;
 
         private bool IsHoverActive => _isPlayingState && _isBakingActive && !_hasConfigError;
 
@@ -81,14 +80,8 @@ namespace GWBGameJam
 
         private void Update()
         {
-            if (!_needsHoverCheck || !IsHoverActive) return;
-            _needsHoverCheck = false;
-
-            // Resume 后鼠标未移动，OnMouseEnter 不会重新触发，主动检测一次
-            Vector2 mouseWorld = _camera.ScreenToWorldPoint(Input.mousePosition);
-            var hit = Physics2D.OverlapPoint(mouseWorld);
-            if (hit != null && hit.TryGetComponent(out LaneHoverDetector detector))
-                SetHoveredLane(detector.LaneIndex);
+            if (!IsHoverActive) return;
+            SetHoveredLane(ResolvePointerLaneIndex());
         }
 
         private void HandleGameStateChanged(OnGameStateChanged e)
@@ -98,8 +91,6 @@ namespace GWBGameJam
 
             if (wasActive && !IsHoverActive)
                 ResetAllLanes();
-            else if (!wasActive && IsHoverActive)
-                _needsHoverCheck = true;
         }
 
         private void HandleBakingStateChanged(OnBakingStateChanged e)
@@ -109,21 +100,74 @@ namespace GWBGameJam
 
             if (wasActive && !IsHoverActive)
                 ResetAllLanes();
-            else if (!wasActive && IsHoverActive)
-                _needsHoverCheck = true;
         }
 
         // 由 LaneHoverDetector 调用
         public void OnLaneEnter(int laneIndex)
         {
             if (!IsHoverActive) return;
-            SetHoveredLane(laneIndex);
+            SetHoveredLane(ResolvePointerLaneIndex());
         }
 
         public void OnLaneExit(int laneIndex)
         {
-            if (_hoveredLaneIndex != laneIndex) return;
-            SetHoveredLane(-1);
+            if (!IsHoverActive) return;
+            SetHoveredLane(ResolvePointerLaneIndex());
+        }
+
+        private int ResolvePointerLaneIndex()
+        {
+            int laneCount = _waypointConfig.Lanes != null ? _waypointConfig.Lanes.Length : 0;
+            if (laneCount <= 0) return -1;
+
+            Vector2 pointerWorld = _camera.ScreenToWorldPoint(Input.mousePosition);
+            int bestLane = -1;
+            float bestSqrDistance = float.PositiveInfinity;
+
+            for (int i = 0; i < laneCount; i++)
+            {
+                float sqrDistance = DistanceToLaneSqr(pointerWorld, i);
+                if (sqrDistance >= bestSqrDistance) continue;
+
+                bestSqrDistance = sqrDistance;
+                bestLane = i;
+            }
+
+            return bestLane;
+        }
+
+        private float DistanceToLaneSqr(Vector2 point, int laneIndex)
+        {
+            if (laneIndex < 0 || laneIndex >= _waypointConfig.Lanes.Length)
+                return float.PositiveInfinity;
+
+            Vector2[] positions = _waypointConfig.Lanes[laneIndex].Positions;
+            if (positions == null || positions.Length == 0)
+                return float.PositiveInfinity;
+            if (positions.Length == 1)
+                return (point - positions[0]).sqrMagnitude;
+
+            float best = float.PositiveInfinity;
+            for (int i = 0; i < positions.Length - 1; i++)
+            {
+                float sqrDistance = DistancePointToSegmentSqr(point, positions[i], positions[i + 1]);
+                if (sqrDistance < best)
+                    best = sqrDistance;
+            }
+
+            return best;
+        }
+
+        private static float DistancePointToSegmentSqr(Vector2 point, Vector2 a, Vector2 b)
+        {
+            Vector2 ab = b - a;
+            float lengthSqr = ab.sqrMagnitude;
+            if (lengthSqr <= Mathf.Epsilon)
+                return (point - a).sqrMagnitude;
+
+            float t = Mathf.Clamp01(Vector2.Dot(point - a, ab) / lengthSqr);
+            Vector2 closest = a + ab * t;
+            return (point - closest).sqrMagnitude;
         }
 
         private void SetHoveredLane(int laneIndex)
@@ -189,7 +233,12 @@ namespace GWBGameJam
             return true;
         }
 
-        public int GetHoveredLaneIndex() => _hoveredLaneIndex;
+        public int GetHoveredLaneIndex()
+        {
+            if (IsHoverActive)
+                SetHoveredLane(ResolvePointerLaneIndex());
+            return _hoveredLaneIndex;
+        }
 
         private void OnDrawGizmos()
         {
