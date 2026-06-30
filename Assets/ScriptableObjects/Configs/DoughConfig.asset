@@ -19,3 +19,5 @@ MonoBehaviour:
   _waterFactorMin: 0.5
   _waterFactorMax: 2
   _initialPos: 0.5
+  _posMin: 0.35
+  _posMax: 0.65

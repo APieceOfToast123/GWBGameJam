@@ -24,12 +24,22 @@ namespace GWBGameJam
         private bool _isBakingActive;
         private bool _hasConfigError;
         private bool _needsHoverCheck;
+        private Vector3[] _baseScales;
 
         private bool IsHoverActive => _isPlayingState && _isBakingActive && !_hasConfigError;
 
         private void Awake()
         {
             ValidateConfig();
+            CacheBaseScales();
+        }
+
+        private void CacheBaseScales()
+        {
+            if (_laneVisuals == null) return;
+            _baseScales = new Vector3[_laneVisuals.Length];
+            for (int i = 0; i < _laneVisuals.Length; i++)
+                _baseScales[i] = _laneVisuals[i].Visual != null ? _laneVisuals[i].Visual.localScale : Vector3.one;
         }
 
         private void ValidateConfig()
@@ -78,14 +88,15 @@ namespace GWBGameJam
 
         private void Update()
         {
-            if (!_needsHoverCheck || !IsHoverActive) return;
-            _needsHoverCheck = false;
+            if (!IsHoverActive) return;
 
-            // Resume 后鼠标未移动，OnMouseEnter 不会重新触发，主动检测一次
+            // 每帧主动检测鼠标所在球道（不依赖 OnMouseEnter，避免被 UI 挡住事件）
             Vector2 mouseWorld = _camera.ScreenToWorldPoint(Input.mousePosition);
             var hit = Physics2D.OverlapPoint(mouseWorld);
             if (hit != null && hit.TryGetComponent(out LaneHoverDetector detector))
                 SetHoveredLane(detector.LaneIndex);
+            else
+                SetHoveredLane(-1);
         }
 
         private void HandleGameStateChanged(OnGameStateChanged e)
@@ -113,6 +124,13 @@ namespace GWBGameJam
         // 由 LaneHoverDetector 调用
         public void OnLaneEnter(int laneIndex)
         {
+            // ╔══════ DEBUG：lane hover ══════╗
+#pragma warning disable 162
+            const bool DebugHover = true;
+            if (DebugHover)
+                Debug.Log($"[LaneHover] OnLaneEnter lane={laneIndex} | IsHoverActive={IsHoverActive} (Playing={_isPlayingState} Baking={_isBakingActive} ConfigError={_hasConfigError})");
+#pragma warning restore 162
+            // ╚══════════════════════════════╝
             if (!IsHoverActive) return;
             SetHoveredLane(laneIndex);
         }
@@ -150,10 +168,17 @@ namespace GWBGameJam
         {
             if (laneIndex < 0 || laneIndex >= _laneVisuals.Length) return;
             var v = _laneVisuals[laneIndex];
+            // ╔══════ DEBUG：lane 换图 ══════╗
+#pragma warning disable 162
+            const bool DebugHover = true;
+            if (DebugHover && hovered)
+                Debug.Log($"[LaneHover] ApplyVisual lane={laneIndex} hovered=true | Renderer={(v.Renderer != null ? "OK" : "NULL")} HoveredSprite={(v.HoveredSprite != null ? v.HoveredSprite.name : "NULL")}");
+#pragma warning restore 162
+            // ╚══════════════════════════════╝
             if (v.Renderer != null)
                 v.Renderer.sprite = hovered ? v.HoveredSprite : v.NormalSprite;
-            if (v.Visual != null)
-                v.Visual.localScale = hovered ? Vector3.one * _hoverScaleMultiplier : Vector3.one;
+            if (v.Visual != null && _baseScales != null)
+                v.Visual.localScale = _baseScales[laneIndex] * (hovered ? _hoverScaleMultiplier : 1f);
         }
 
         public bool TryGetWaypoint(int laneIndex, int posIndex, out Vector2 position)

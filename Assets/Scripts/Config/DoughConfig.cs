@@ -12,6 +12,8 @@ namespace GWBGameJam
         [SerializeField, Min(0.01f)] private float _waterFactorMin = 0.5f;
         [SerializeField, Min(0.01f)] private float _waterFactorMax = 3f;
         [SerializeField, Range(0f, 1f)] private float _initialPos = 0.5f;
+        [SerializeField, Range(0f, 1f)] private float _posMin = 0f;
+        [SerializeField, Range(0f, 1f)] private float _posMax = 1f;
 
         public float FlourStep => _flourStep;
         public float FlourFactorMin => _flourFactorMin;
@@ -20,6 +22,8 @@ namespace GWBGameJam
         public float WaterFactorMin => _waterFactorMin;
         public float WaterFactorMax => _waterFactorMax;
         public float InitialPos => _initialPos;
+        public float PosMin => _posMin;
+        public float PosMax => _posMax;
 
         public void Validate()
         {
@@ -32,6 +36,11 @@ namespace GWBGameJam
             {
                 Debug.LogError("[DoughConfig] WaterFactorMax 不能小于 WaterFactorMin，已自动修正");
                 _waterFactorMax = _waterFactorMin;
+            }
+            if (_posMax < _posMin)
+            {
+                Debug.LogError("[DoughConfig] PosMax 不能小于 PosMin，已自动修正");
+                _posMax = _posMin;
             }
         }
     }

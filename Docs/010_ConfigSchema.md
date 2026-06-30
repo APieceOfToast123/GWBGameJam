@@ -6,6 +6,7 @@
 > - `WaterSpeed`(float, 默认 0.3, 0.01~2) — 右键长按指示器左移的基础速度（bar 比例/秒）
 > - `WaterFactorMin`(float, 默认 0.5) / `WaterFactorMax`(float, 默认 3.0, ≥Min) — 每次右键按下随机倍率区间（本次长按固定）
 > - `InitialPos`(float, 默认 0.5, 0~1) — 关卡开始 / 投掷后指示器重置的归一化位置
+> - `PosMin`(float, 默认 0, 0~1) / `PosMax`(float, 默认 1, ≥PosMin) — 指示器可移动的归一化范围；长按左右键时 `_pos` 夹在 [PosMin, PosMax]，防止冲到比例条边缘。策划据绿区分布设定
 > 旧字段 `FlourClickMin/Max`、`WaterFillRate`、`WaterSpeedMultiplierMin/Max`、`InitialRatio`、`MaxRatio` **移除**。
 > `DoughStateBoundaryConfig`（阈值/中心/容错）**作废**，不再参与运行时逻辑（类与 .asset 保留仅供旧测试编译，可后续删除）。命中判定改为 DoughState 枚举相等（见 006）。
 
