@@ -2,7 +2,7 @@
 
 > 2026-06-29 DoughConfig Overhaul（覆盖旧 DoughConfig 字段）：比例条改为「滑块对位 UI」机制后，DoughConfig 字段重做为归一化移动参数：
 > - `FlourStep`(float, 默认 0.1, 0.01~1) — 每次左键加粉指示器右移的基础量（占整条 bar 比例）
-> - `FlourFactorMin`(float, 默认 0.5) / `FlourFactorMax`(float, 默认 2.0, ≥Min) — 每次左键随机倍率区间
+> - `FlourFactorMin`(float, 默认 0.3) / `FlourFactorMax`(float, 默认 2.0, ≥Min) — 每次左键随机倍率区间
 > - `WaterSpeed`(float, 默认 0.3, 0.01~2) — 右键长按指示器左移的基础速度（bar 比例/秒）
 > - `WaterFactorMin`(float, 默认 0.5) / `WaterFactorMax`(float, 默认 3.0, ≥Min) — 每次右键按下随机倍率区间（本次长按固定）
 > - `InitialPos`(float, 默认 0.5, 0~1) — 关卡开始 / 投掷后指示器重置的归一化位置
@@ -195,17 +195,17 @@ Victory
 
 ## DoughConfig
 
-> 最新字段契约以本表为准；下方历史表格中的 `FlourClickAmount` 旧字段名不再使用。
+> 最新字段契约以本表为准；下方历史表格中的 `FlourClickAmount` / `FlourClickMin` 等旧字段名不再使用。
 
 | 字段名 | 类型 | 默认值 | 合法范围 | 策划说明 |
 |--------|------|--------|---------|---------|
-| FlourClickMin | float | 0.3 | 0.1 ~ 2.0 | 每次左键单击抽取的最小加粉格数，比例条向面粉方向移动 |
-| FlourClickMax | float | 2.0 | FlourClickMin ~ 2.0 | 每次左键单击抽取的最大加粉格数 |
-| WaterFillRate | float | 0.5 | 0.1 ~ 3.0 | 右键长按时加水的基础速度 |
-| WaterSpeedMultiplierMin | float | 0.5 | 0.1 ~ WaterSpeedMultiplierMax | 每次右键按下抽取的最小加水速度倍率 |
-| WaterSpeedMultiplierMax | float | 3.0 | WaterSpeedMultiplierMin ~ 3.0 | 每次右键按下抽取的最大加水速度倍率，本次长按期间固定 |
-| InitialRatio | float | 1.0 | 0.0 ~ MaxRatio | 关卡开始及每次投掷后的重置比例 |
-| MaxRatio | float | 3.0 | ThresholdSoftToSoftest+0.1 ~ 10.0 | 比例值上限，必须大于 ThresholdSoftToSoftest |
+| FlourStep | float | 0.1 | 0.01 ~ 1.0 | 每次左键加粉的基础位移，占整条比例条宽度 |
+| FlourFactorMin | float | 0.3 | 0.01 ~ FlourFactorMax | 每次左键点击抽取的最小加粉倍率 |
+| FlourFactorMax | float | 2.0 | FlourFactorMin ~ 10.0 | 每次左键点击抽取的最大加粉倍率 |
+| WaterSpeed | float | 0.3 | 0.01 ~ 2.0 | 右键长按时比例线向水方向移动的基础速度 |
+| WaterFactorMin | float | 0.5 | 0.01 ~ WaterFactorMax | 每次右键按下抽取的最小加水速度倍率 |
+| WaterFactorMax | float | 3.0 | WaterFactorMin ~ 10.0 | 每次右键按下抽取的最大加水速度倍率，本次长按期间固定 |
+| InitialPos | float | 0.5 | 0.0 ~ 1.0 | 关卡开始及每次投掷后指示器的重置归一化位置 |
 
 **职责：** 控制面团输入的响应速度与幅度。
 

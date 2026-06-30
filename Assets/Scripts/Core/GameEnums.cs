@@ -20,6 +20,12 @@ namespace GWBGameJam
         TooHard
     }
 
+    public enum IngredientType
+    {
+        Flour,
+        Water
+    }
+
     public enum BakingState
     {
         Idle,

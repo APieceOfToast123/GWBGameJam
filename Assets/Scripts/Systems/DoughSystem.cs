@@ -30,7 +30,7 @@ namespace GWBGameJam
         private void Awake()
         {
             ValidateConfig();
-            _pos = _hasConfigError ? 0.5f : Mathf.Clamp(_config.InitialPos, _config.PosMin, _config.PosMax);
+            _pos = _hasConfigError ? 0.5f : _config.InitialPos;
         }
 
         private void ValidateConfig()
@@ -67,15 +67,21 @@ namespace GWBGameJam
 
             // 左键加粉 → 指示器右移（_pos 增大），每次乘随机倍率
             if (Input.GetMouseButtonDown(0))
-                _pos = Mathf.Clamp(_pos + _config.FlourStep * Random.Range(_config.FlourFactorMin, _config.FlourFactorMax), _config.PosMin, _config.PosMax);
+            {
+                _pos = Mathf.Clamp01(_pos + _config.FlourStep * Random.Range(_config.FlourFactorMin, _config.FlourFactorMax));
+                EventBus<OnIngredientUsed>.Publish(new OnIngredientUsed(IngredientType.Flour));
+            }
 
             // 右键按下时抽一次倍率，本次长按固定
             if (Input.GetMouseButtonDown(1))
+            {
                 _activeWaterFactor = Random.Range(_config.WaterFactorMin, _config.WaterFactorMax);
+                EventBus<OnIngredientUsed>.Publish(new OnIngredientUsed(IngredientType.Water));
+            }
 
             // 右键加水 → 指示器左移（_pos 减小），连续
             if (Input.GetMouseButton(1))
-                _pos = Mathf.Clamp(_pos - _config.WaterSpeed * _activeWaterFactor * Time.deltaTime, _config.PosMin, _config.PosMax);
+                _pos = Mathf.Clamp01(_pos - _config.WaterSpeed * _activeWaterFactor * Time.deltaTime);
 
             MoveIndicator();
             DeriveAndPublishState();
@@ -127,7 +133,7 @@ namespace GWBGameJam
         private void ResetToInitial()
         {
             if (_hasConfigError) return;
-            _pos = Mathf.Clamp(_config.InitialPos, _config.PosMin, _config.PosMax);
+            _pos = _config.InitialPos;
             MoveIndicator();
             DeriveAndPublishState();
         }

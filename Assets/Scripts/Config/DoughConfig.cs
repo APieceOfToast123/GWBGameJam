@@ -6,7 +6,7 @@ namespace GWBGameJam
     public class DoughConfig : ScriptableObject
     {
         [SerializeField, Range(0.01f, 1f)] private float _flourStep = 0.1f;
-        [SerializeField, Min(0.01f)] private float _flourFactorMin = 0.5f;
+        [SerializeField, Min(0.01f)] private float _flourFactorMin = 0.3f;
         [SerializeField, Min(0.01f)] private float _flourFactorMax = 2f;
         [SerializeField, Range(0.01f, 2f)] private float _waterSpeed = 0.3f;
         [SerializeField, Min(0.01f)] private float _waterFactorMin = 0.5f;

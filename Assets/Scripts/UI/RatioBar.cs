@@ -17,15 +17,12 @@ namespace GWBGameJam
         [SerializeField] private Image _waterTextureImage;
         [SerializeField] private TMP_Text _doughNameText;
         [SerializeField] private GameObject _validCheckmark;
-        [SerializeField, Min(0f)] private float _textureLength = 100f;
 
         private bool _hasConfigError;
-        private RectTransform _barRect;
+        private RectTransform _textureBoundsRect;
 
         private void Awake()
         {
-            _barRect = GetComponent<RectTransform>();
-
             if (_doughSystem == null)       { Debug.LogError("[RatioBar] DoughSystem 未赋值");        _hasConfigError = true; }
             if (_indicatorRect == null)     { Debug.LogError("[RatioBar] IndicatorRect 未赋值");      _hasConfigError = true; }
             if (_flourTextureRect == null)  { Debug.LogError("[RatioBar] FlourTextureRect 未赋值");   _hasConfigError = true; }
@@ -33,8 +30,19 @@ namespace GWBGameJam
             if (_waterTextureRect == null)  { Debug.LogError("[RatioBar] WaterTextureRect 未赋值");   _hasConfigError = true; }
             if (_waterTextureImage == null) { Debug.LogError("[RatioBar] WaterTextureImage 未赋值");  _hasConfigError = true; }
 
+            _textureBoundsRect = _flourTextureRect != null ? _flourTextureRect.parent as RectTransform : null;
+            if (_textureBoundsRect == null || _waterTextureRect == null || _waterTextureRect.parent != _textureBoundsRect)
+            {
+                Debug.LogError("[RatioBar] FlourTextureRect 与 WaterTextureRect 必须位于同一个 RectTransform 父节点下");
+                _hasConfigError = true;
+            }
+
             if (!_hasConfigError)
+            {
                 ConfigureVisualOrder();
+                ConfigureTextureImage(_flourTextureImage);
+                ConfigureTextureImage(_waterTextureImage);
+            }
         }
 
         private void Update()
@@ -54,6 +62,12 @@ namespace GWBGameJam
             _flourTextureRect.SetAsFirstSibling();
             _waterTextureRect.SetAsFirstSibling();
             _indicatorRect.SetAsLastSibling();
+        }
+
+        private void ConfigureTextureImage(Image image)
+        {
+            if (image == null) return;
+            image.raycastTarget = false;
         }
 
         private void SetDoughVisualsActive(bool isActive)
@@ -87,17 +101,24 @@ namespace GWBGameJam
 
         private void UpdateTextureAreas(float indicatorX)
         {
-            // 面粉块贴指针左侧、水块贴右侧，等长固定，随指针一起移动
-            float half = _textureLength * 0.5f;
-            SetTextureBlock(_flourTextureRect, indicatorX - half);
-            SetTextureBlock(_waterTextureRect, indicatorX + half);
+            float halfWidth = _textureBoundsRect.rect.width * 0.5f;
+            float left = -halfWidth;
+            float right = halfWidth;
+            float clampedX = Mathf.Clamp(indicatorX, left, right);
+
+            SetTextureSpan(_flourTextureRect, left, clampedX);
+            SetTextureSpan(_waterTextureRect, clampedX, right);
         }
 
-        private void SetTextureBlock(RectTransform rect, float centerX)
+        private void SetTextureSpan(RectTransform rect, float left, float right)
         {
             if (rect == null) return;
+
+            float width = Mathf.Max(0f, right - left);
+            float centerX = left + width * 0.5f;
             rect.anchoredPosition = new Vector2(centerX, rect.anchoredPosition.y);
-            rect.sizeDelta = new Vector2(_textureLength, rect.sizeDelta.y);
+            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, width);
+            rect.SetSizeWithCurrentAnchors(RectTransform.Axis.Vertical, _textureBoundsRect.rect.height);
         }
     }
 }
